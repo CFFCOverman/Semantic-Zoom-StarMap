@@ -1,0 +1,18 @@
+{
+ "system": {"id": "skill-starmap", "role": "把任何技能画成可缩放的星图：拉远看全景，点开看下一层，连线看谁引用谁"},
+ "interface": [
+  {"dir": "in", "label": "在频道说「把 X 技能上星图」", "via": "SKILL.md", "source": "SKILL.md § L0 全景"},
+  {"dir": "out", "label": "星图页面", "via": "page/starmap.html", "source": "SKILL.md § 接口"},
+  {"dir": "in", "label": "在页面选中文件，点「用 AI 改」复制改动指令", "via": "page/starmap.html", "source": "SKILL.md § L0 全景"},
+  {"dir": "decide", "label": "哪些技能上图、hints 里的手写边和层级覆盖", "via": "zoom.hints.json", "source": "SKILL.md § L0 全景"},
+  {"dir": "read", "label": "被扫描技能的源文件（只读）", "via": "tools/zoomgen.py", "source": "SKILL.md § 接口"},
+  {"dir": "never", "label": "改被扫描技能的任何文件", "source": "SKILL.md § 接口"}
+ ],
+ "layers": {},
+ "edges": [
+  {"from": "skill-starmap", "to": "semantic-zoom-architecture", "kind": "follows", "source": "SKILL.md 开头规则"},
+  {"from": "tools/zoomgen.py", "to": "zoom.schema.json", "kind": "follows", "source": "tools/zoomgen.py 文件头"},
+  {"from": "tools/zoomgen.py", "to": "registry.json", "kind": "reads", "source": "SKILL.md § 步骤"},
+  {"from": "page/starmap.html", "to": "zoom.schema.json", "kind": "reads", "source": "page/README.md"}
+ ]
+}

@@ -1,0 +1,22 @@
+{
+ "out": "manifests",
+ "systems": [
+  {
+   "id": "semantic-zoom-architecture",
+   "root": "../semantic-zoom-architecture",
+   "location": "semantic-zoom-starmap/semantic-zoom-architecture/（随 SSM 打包；claude.ai 技能 semantic-zoom-architecture）",
+   "hints": "hints/semantic-zoom-architecture.zoom.hints.json",
+   "skill": true
+  },
+  {
+   "id": "skill-starmap",
+   "root": ".",
+   "location": "semantic-zoom-starmap/skill-starmap/",
+   "hints": "zoom.hints.json",
+   "exclude": [
+    "manifests"
+   ],
+   "skill": true
+  }
+ ]
+}

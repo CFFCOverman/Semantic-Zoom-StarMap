@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "zoom.schema.json",
+  "title": "zoom.json：技能 / 项目的语义缩放清单（协议 2.0）",
+  "description": "本文件是协议字段、节点类型与边类型的唯一出处。每个技能或项目由 zoomgen 生成一份 zoom.json（勿手改），可另配一份手写 zoom.hints.json（格式见 $defs.hints）。推导规则与层级映射见 rules.md。2.0 起文件是最小单位：没有节节点。",
+  "type": "object",
+  "required": ["zoom", "system", "nodes", "edges"],
+  "properties": {
+    "zoom": { "const": "2.0", "description": "协议版本" },
+    "generated": {
+      "type": "object",
+      "description": "生成信息。有此字段的文件是生成文件，勿手改。",
+      "properties": {
+        "by": { "type": "string" }, "at": { "type": "string" },
+        "from": { "type": "array", "items": { "type": "string" } },
+        "note": { "type": "string" }
+      }
+    },
+    "system": {
+      "type": "object",
+      "description": "L0 的一个星系：整个技能或项目",
+      "required": ["id", "title"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$", "description": "全局唯一；节点 id 都以它加冒号开头" },
+        "title": { "type": "string" },
+        "version": { "type": "string" },
+        "role": { "type": "string", "description": "一句话职责" },
+        "source": { "type": "string", "description": "根目录的头脑文件（README.md 或 SKILL.md）" },
+        "location": { "type": "string", "description": "源目录在哪：登记表的 location，没有时为 root" }
+      }
+    },
+    "interface": {
+      "type": "array",
+      "description": "L0 人机接口：人和 AI 之间经由什么、往哪个方向交换什么",
+      "items": {
+        "type": "object",
+        "required": ["dir", "label"],
+        "properties": {
+          "dir": {
+            "oneOf": [
+              { "const": "in", "description": "人 → AI：下指令的入口" },
+              { "const": "out", "description": "AI → 人：结果回到哪里" },
+              { "const": "decide", "description": "只归人的决定权" },
+              { "const": "read", "description": "AI 读取的外部来源" },
+              { "const": "write", "description": "AI 写入的外部存储" },
+              { "const": "never", "description": "明确不做的事" }
+            ]
+          },
+          "label": { "type": "string" },
+          "via": { "type": "string", "description": "落在哪个节点（节点 id，可省略系统前缀）" },
+          "source": { "type": "string", "description": "证据：文件 § 节" }
+        }
+      }
+    },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "layer", "kind", "title"],
+        "properties": {
+          "id": { "type": "string", "description": "系统节点是 <system>；文件夹是 <system>:<路径>/；文件是 <system>:<路径>。没有 # 节锚点。" },
+          "parent": { "type": ["string", "null"], "description": "所在文件夹的节点；点开 parent 才看到本节点" },
+          "layer": { "type": "integer", "minimum": 0, "maximum": 3, "description": "层 L0–L3，判定见 rules.md § 2" },
+          "kind": {
+            "oneOf": [
+              { "const": "system", "description": "星系：根文件夹与它的头脑文件" },
+              { "const": "dir", "description": "文件夹（模块），与它的头脑文件是同一个节点" },
+              { "const": "file", "description": "文件：最小单位" }
+            ]
+          },
+          "title": { "type": "string" },
+          "role": { "type": "string", "description": "一句话角色" },
+          "source": { "type": "string", "description": "出处：文件路径（文件夹为它的头脑文件）" },
+          "head": { "type": "string", "description": "system 与 dir：头脑文件的路径；没有头脑文件时不写" },
+          "sections": {
+            "type": "array",
+            "description": "file（以及有头脑文件的 dir、system）：文件里的标题清单，原文完整，只供显示，不是节点。json 文件为顶层键。",
+            "items": {
+              "type": "object",
+              "required": ["level", "title"],
+              "properties": {
+                "level": { "type": "integer", "minimum": 1, "maximum": 4, "description": "标题级别；json 顶层键为 2" },
+                "title": { "type": "string" },
+                "frozen": { "type": "boolean", "description": "冻结期内原文不改" }
+              }
+            }
+          },
+          "defines": { "type": "array", "items": { "type": "string" }, "description": "以本文件为唯一出处的概念（来自 README 出处表），带「§ 节」时写在概念后" },
+          "generated": { "type": "boolean", "description": "本节点是生成文件，勿手改" }
+        }
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["from", "to", "kind"],
+        "properties": {
+          "from": { "type": "string", "description": "节点 id（文件、文件夹或系统）" },
+          "to": { "type": "string", "description": "节点 id，可指向别的系统，如 semantic-zoom-architecture:layers.md" },
+          "kind": {
+            "oneOf": [
+              { "const": "ref", "description": "引用：正文写了「见 X § Y」（脚本推出）" },
+              { "const": "mention", "description": "提及：正文点名了某文件但没写「见」（脚本推出）" },
+              { "const": "param", "description": "读数值：正文引用 params 里的参数（脚本推出）" },
+              { "const": "copy", "description": "生成副本：生成文件的一段来自这里（脚本推出）" },
+              { "const": "generates", "description": "生成：脚本产出某个生成文件（脚本推出）" },
+              { "const": "dispatch", "description": "派工：一方派出另一方去执行（手写 hints）" },
+              { "const": "runs", "description": "调度 / 加载：一方按排程启动或加载另一方（手写 hints）" },
+              { "const": "reads", "description": "读：运行时读另一方的数据（手写 hints）" },
+              { "const": "writes", "description": "写：运行时写另一方的数据（手写 hints）" },
+              { "const": "follows", "description": "遵循：按另一个系统的规则组织（手写 hints，常跨系统）" }
+            ]
+          },
+          "sections": { "type": "array", "items": { "type": "string" }, "description": "引用写到的「§ 节」原文，如「§ 日常小改 第 3 条」；同一对文件多处引用时都列上" },
+          "source": { "type": "string", "description": "这条边的证据：文件:行" },
+          "n": { "type": "integer", "description": "同一对节点之间这种边出现的次数" },
+          "note": { "type": "string" }
+        }
+      }
+    },
+    "checks": {
+      "type": "object",
+      "description": "生成时的检查结果，页面用它给节点标红。每条带 node（出问题的节点 id）",
+      "properties": {
+        "broken": { "type": "array", "items": { "type": "object" }, "description": "断链：引用或链接的文件不存在（错误）" },
+        "unresolved": { "type": "array", "items": { "type": "object" }, "description": "节对不上：文件在，但「§ 节」对不上它的标题（警告）" },
+        "duplicates": { "type": "array", "items": { "type": "object" }, "description": "疑似复写：同一句定义性文字或数值出现在出处以外（警告）" },
+        "structure": { "type": "array", "items": { "type": "object" }, "description": "结构问题：根目录缺头脑文件、skill 文件夹缺 SKILL.md、两个头脑文件、头脑文件没列出下面的文件（错误）" },
+        "info": { "type": "array", "items": { "type": "object" }, "description": "提示：其他文件夹没有头脑文件、按默认处理（不算问题）" },
+        "accepted": { "type": "array", "items": { "type": "object" }, "description": "已确认的复写：hints 的 accepted 里列过的疑似复写，why 是确认时写的理由（不算问题）" },
+        "depth": { "type": "array", "items": { "type": "object" }, "description": "引用深度：沿 ref 边要跟 2 跳以上的文件。hops 是最远几跳，files 是一共要再读几个文件，path 是最远那条路（提示）" },
+        "cycles": { "type": "array", "items": { "type": "object" }, "description": "成圈：nodes 里的文件沿 ref 边互相引用成圈（提示）" }
+      }
+    }
+  },
+  "$defs": {
+    "hints": {
+      "title": "zoom.hints.json：手写补充（只写脚本推不出来的东西）",
+      "type": "object",
+      "properties": {
+        "system": { "type": "object", "description": "可覆盖 id、title、version、role" },
+        "interface": { "$ref": "#/properties/interface" },
+        "edges": { "type": "array", "description": "派工、调度、读、写、遵循等边；from / to 写路径或节点 id，可省略系统前缀" },
+        "skills": { "type": "array", "items": { "type": "string" }, "description": "哪些子文件夹是 skill 文件夹（以 / 结尾的路径），它们必须有 SKILL.md；根目录是不是 skill 由登记表决定" },
+        "layers": {
+          "type": "object",
+          "description": "层级覆盖：键是文件路径或以 / 结尾的文件夹路径，值是 0–3。不写时按 rules.md § 2 的映射",
+          "additionalProperties": { "type": "integer", "minimum": 0, "maximum": 3 }
+        },
+        "accepted": {
+          "type": "array",
+          "description": "确认过不算问题的疑似复写。text 写那句话的开头（照检查报告里的 text 抄），why 写为什么不算；对上的不再报",
+          "items": { "type": "object", "required": ["text"], "properties": { "text": { "type": "string" }, "why": { "type": "string" } } }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,526 @@
+{
+ "zoom": "2.0",
+ "generated": {
+  "by": "skill-starmap/tools/zoomgen.py",
+  "at": "2026-11-25",
+  "from": [
+   "SKILL.md",
+   "daily-change.md",
+   "delivery-checklist.md",
+   "file-structure.md",
+   "layers.md",
+   "metrics.md",
+   "new-project.md",
+   "params.json",
+   "restructure.md",
+   "split.md",
+   "starmap.md",
+   "templates/README.md",
+   "templates/project-readme.md",
+   "templates/skill-md.md"
+  ],
+  "note": "生成文件，勿手改。改源文件或 zoom.hints.json 后重新运行 zoomgen。"
+ },
+ "system": {
+  "id": "semantic-zoom-architecture",
+  "title": "语义缩放架构（人与 AI 的协作架构法）",
+  "role": "架构法：逐层展开、一处定义、只引用不复写；L0 先画人与 AI 怎么协作",
+  "source": "SKILL.md",
+  "location": "semantic-zoom-starmap/semantic-zoom-architecture/（随 SSM 打包；claude.ai 技能 semantic-zoom-architecture）"
+ },
+ "interface": [
+  {
+   "dir": "in",
+   "label": "新建、修改或初始化任何项目、skill、文件时加载",
+   "via": "semantic-zoom-architecture",
+   "source": "SKILL.md § 接口"
+  },
+  {
+   "dir": "decide",
+   "label": "用户先确认 L0；改已有项目前先问",
+   "via": "semantic-zoom-architecture:new-project.md",
+   "source": "new-project.md 第 1 条、restructure.md 第 2 条"
+  },
+  {
+   "dir": "out",
+   "label": "按结构放好的文件、改前快照、同步好的星图",
+   "via": "semantic-zoom-architecture",
+   "source": "SKILL.md § 接口"
+  }
+ ],
+ "nodes": [
+  {
+   "id": "semantic-zoom-architecture",
+   "parent": null,
+   "layer": 0,
+   "kind": "system",
+   "title": "语义缩放架构（人与 AI 的协作架构法）",
+   "role": "架构法：逐层展开、一处定义、只引用不复写；L0 先画人与 AI 怎么协作",
+   "source": "SKILL.md",
+   "head": "SKILL.md",
+   "sections": [
+    {
+     "level": 2,
+     "title": "接口"
+    },
+    {
+     "level": 2,
+     "title": "L0：什么情况看哪一节"
+    },
+    {
+     "level": 2,
+     "title": "三条铁律"
+    }
+   ]
+  },
+  {
+   "id": "semantic-zoom-architecture:templates/",
+   "parent": "semantic-zoom-architecture",
+   "layer": 1,
+   "kind": "dir",
+   "title": "模板",
+   "role": "写新文件时照着用的骨架。",
+   "source": "templates/README.md",
+   "head": "templates/README.md"
+  },
+  {
+   "id": "semantic-zoom-architecture:daily-change.md",
+   "parent": "semantic-zoom-architecture",
+   "layer": 1,
+   "kind": "file",
+   "title": "daily-change.md",
+   "role": "日常改一处（一个节点、一个 skill、一个步骤）→ 日常小改",
+   "source": "daily-change.md",
+   "sections": [
+    {
+     "level": 2,
+     "title": "改动分级"
+    }
+   ]
+  },
+  {
+   "id": "semantic-zoom-architecture:delivery-checklist.md",
+   "parent": "semantic-zoom-architecture",
+   "layer": 1,
+   "kind": "file",
+   "title": "delivery-checklist.md",
+   "role": "交付前 → 交付前检查清单",
+   "source": "delivery-checklist.md"
+  },
+  {
+   "id": "semantic-zoom-architecture:file-structure.md",
+   "parent": "semantic-zoom-architecture",
+   "layer": 1,
+   "kind": "file",
+   "title": "file-structure.md",
+   "role": "新建文件或文件夹、决定东西放哪 → 文件结构即架构",
+   "source": "file-structure.md"
+  },
+  {
+   "id": "semantic-zoom-architecture:layers.md",
+   "parent": "semantic-zoom-architecture",
+   "layer": 1,
+   "kind": "file",
+   "title": "layers.md",
+   "role": "分清 L0 到 L3 每层放什么 → 层级",
+   "source": "layers.md"
+  },
+  {
+   "id": "semantic-zoom-architecture:metrics.md",
+   "parent": "semantic-zoom-architecture",
+   "layer": 1,
+   "kind": "file",
+   "title": "metrics.md",
+   "role": "想知道这套架构有没有在起作用，或发现一处过时 → 度量",
+   "source": "metrics.md"
+  },
+  {
+   "id": "semantic-zoom-architecture:new-project.md",
+   "parent": "semantic-zoom-architecture",
+   "layer": 1,
+   "kind": "file",
+   "title": "new-project.md",
+   "role": "新项目 → 新项目的步骤",
+   "source": "new-project.md"
+  },
+  {
+   "id": "semantic-zoom-architecture:params.json",
+   "parent": "semantic-zoom-architecture",
+   "layer": 3,
+   "kind": "file",
+   "title": "params.json",
+   "role": "调阈值（引用深度、拆分长度、一起改的比例）→ 参数",
+   "source": "params.json",
+   "sections": [
+    {
+     "level": 2,
+     "title": "note"
+    },
+    {
+     "level": 2,
+     "title": "ref_hops_max"
+    },
+    {
+     "level": 2,
+     "title": "split_lines"
+    },
+    {
+     "level": 2,
+     "title": "cochange_min"
+    },
+    {
+     "level": 2,
+     "title": "cochange_share"
+    }
+   ]
+  },
+  {
+   "id": "semantic-zoom-architecture:restructure.md",
+   "parent": "semantic-zoom-architecture",
+   "layer": 1,
+   "kind": "file",
+   "title": "restructure.md",
+   "role": "重组已有项目的整体结构 → 改已有项目",
+   "source": "restructure.md"
+  },
+  {
+   "id": "semantic-zoom-architecture:split.md",
+   "parent": "semantic-zoom-architecture",
+   "layer": 1,
+   "kind": "file",
+   "title": "split.md",
+   "role": "不确定要不要分开写、把一节拆成独立文件或 skill → 拆分",
+   "source": "split.md"
+  },
+  {
+   "id": "semantic-zoom-architecture:starmap.md",
+   "parent": "semantic-zoom-architecture",
+   "layer": 1,
+   "kind": "file",
+   "title": "starmap.md",
+   "role": "改完同步星图、改前查谁引用 → 星图清单",
+   "source": "starmap.md"
+  },
+  {
+   "id": "semantic-zoom-architecture:templates/project-readme.md",
+   "parent": "semantic-zoom-architecture:templates/",
+   "layer": 2,
+   "kind": "file",
+   "title": "project-readme.md",
+   "role": "写项目或文件夹的 README 时用",
+   "source": "templates/project-readme.md"
+  },
+  {
+   "id": "semantic-zoom-architecture:templates/skill-md.md",
+   "parent": "semantic-zoom-architecture:templates/",
+   "layer": 2,
+   "kind": "file",
+   "title": "skill-md.md",
+   "role": "写新 skill 时用",
+   "source": "templates/skill-md.md"
+  }
+ ],
+ "edges": [
+  {
+   "from": "semantic-zoom-architecture",
+   "to": "semantic-zoom-architecture:daily-change.md",
+   "kind": "ref",
+   "source": "SKILL.md:13",
+   "sections": [
+    "§ 日常小改 第 1 条",
+    "§ 日常小改 第 3 条"
+   ],
+   "n": 2
+  },
+  {
+   "from": "semantic-zoom-architecture",
+   "to": "semantic-zoom-architecture:file-structure.md",
+   "kind": "ref",
+   "source": "SKILL.md:15",
+   "sections": [
+    "§ 文件结构即架构"
+   ]
+  },
+  {
+   "from": "semantic-zoom-architecture",
+   "to": "semantic-zoom-architecture:starmap.md",
+   "kind": "ref",
+   "source": "SKILL.md:15",
+   "sections": [
+    "§ 星图清单"
+   ]
+  },
+  {
+   "from": "semantic-zoom-architecture:daily-change.md",
+   "to": "semantic-zoom-architecture:starmap.md",
+   "kind": "ref",
+   "source": "daily-change.md:2",
+   "sections": [
+    "§ 星图清单 第 2 条",
+    "§ 星图清单 第 5 条",
+    "§ 星图清单 第 2、4 条"
+   ],
+   "n": 3
+  },
+  {
+   "from": "semantic-zoom-architecture:daily-change.md",
+   "to": "semantic-zoom-architecture:metrics.md",
+   "kind": "ref",
+   "source": "daily-change.md:16",
+   "sections": [
+    "§ 度量 第 4 条"
+   ]
+  },
+  {
+   "from": "semantic-zoom-architecture:delivery-checklist.md",
+   "to": "semantic-zoom-architecture:file-structure.md",
+   "kind": "ref",
+   "source": "delivery-checklist.md:4",
+   "sections": [
+    "§ 文件结构即架构 第 2 条"
+   ]
+  },
+  {
+   "from": "semantic-zoom-architecture:delivery-checklist.md",
+   "to": "semantic-zoom-architecture:starmap.md",
+   "kind": "ref",
+   "source": "delivery-checklist.md:11",
+   "sections": [
+    "§ 星图清单 第 3 条"
+   ]
+  },
+  {
+   "from": "semantic-zoom-architecture:delivery-checklist.md",
+   "to": "semantic-zoom-architecture:params.json",
+   "kind": "param",
+   "source": "delivery-checklist.md:12",
+   "sections": [
+    "§ ref_hops_max"
+   ]
+  },
+  {
+   "from": "semantic-zoom-architecture:file-structure.md",
+   "to": "semantic-zoom-architecture:layers.md",
+   "kind": "ref",
+   "source": "file-structure.md:8",
+   "sections": [
+    "§ 层级"
+   ]
+  },
+  {
+   "from": "semantic-zoom-architecture:file-structure.md",
+   "to": "semantic-zoom-architecture:starmap.md",
+   "kind": "ref",
+   "source": "file-structure.md:8",
+   "sections": [
+    "§ 星图清单"
+   ]
+  },
+  {
+   "from": "semantic-zoom-architecture:layers.md",
+   "to": "semantic-zoom-architecture:file-structure.md",
+   "kind": "ref",
+   "source": "layers.md:2",
+   "sections": [
+    "§ 文件结构即架构 第 1 条",
+    "§ 文件结构即架构 第 2 条"
+   ],
+   "n": 2
+  },
+  {
+   "from": "semantic-zoom-architecture:layers.md",
+   "to": "semantic-zoom-architecture:starmap.md",
+   "kind": "ref",
+   "source": "layers.md:4",
+   "sections": [
+    "§ 星图清单 第 3 条"
+   ]
+  },
+  {
+   "from": "semantic-zoom-architecture:metrics.md",
+   "to": "semantic-zoom-architecture:params.json",
+   "kind": "param",
+   "source": "metrics.md:7",
+   "sections": [
+    "§ ref_hops_max"
+   ]
+  },
+  {
+   "from": "semantic-zoom-architecture:new-project.md",
+   "to": "semantic-zoom-architecture:delivery-checklist.md",
+   "kind": "ref",
+   "source": "new-project.md:7",
+   "sections": [
+    "§ 交付前检查清单"
+   ]
+  },
+  {
+   "from": "semantic-zoom-architecture:restructure.md",
+   "to": "semantic-zoom-architecture:daily-change.md",
+   "kind": "ref",
+   "source": "restructure.md:5",
+   "sections": [
+    "§ 日常小改 第 3 条"
+   ]
+  },
+  {
+   "from": "semantic-zoom-architecture:split.md",
+   "to": "semantic-zoom-architecture:file-structure.md",
+   "kind": "ref",
+   "source": "split.md:3",
+   "sections": [
+    "§ 文件结构即架构 第 1 条",
+    "§ 文件结构即架构"
+   ],
+   "n": 2
+  },
+  {
+   "from": "semantic-zoom-architecture:split.md",
+   "to": "semantic-zoom-architecture:templates/skill-md.md",
+   "kind": "ref",
+   "source": "split.md:5",
+   "sections": [
+    "§ SKILL.md 模板"
+   ]
+  },
+  {
+   "from": "semantic-zoom-architecture:split.md",
+   "to": "semantic-zoom-architecture:params.json",
+   "kind": "param",
+   "source": "split.md:7",
+   "sections": [
+    "§ split_lines",
+    "§ cochange_min",
+    "§ cochange_share"
+   ],
+   "n": 3
+  },
+  {
+   "from": "semantic-zoom-architecture:split.md",
+   "to": "semantic-zoom-architecture:daily-change.md",
+   "kind": "ref",
+   "source": "split.md:9",
+   "sections": [
+    "§ 日常小改 第 3 条"
+   ]
+  },
+  {
+   "from": "semantic-zoom-architecture:split.md",
+   "to": "semantic-zoom-architecture:starmap.md",
+   "kind": "ref",
+   "source": "split.md:10",
+   "sections": [
+    "§ 星图清单 第 5 条"
+   ]
+  },
+  {
+   "from": "semantic-zoom-architecture:split.md",
+   "to": "semantic-zoom-architecture:metrics.md",
+   "kind": "ref",
+   "source": "split.md:14",
+   "sections": [
+    "§ 度量"
+   ]
+  },
+  {
+   "from": "semantic-zoom-architecture:starmap.md",
+   "to": "skill-starmap",
+   "kind": "mention",
+   "source": "starmap.md:2",
+   "n": 4
+  },
+  {
+   "from": "semantic-zoom-architecture:starmap.md",
+   "to": "semantic-zoom-architecture:params.json",
+   "kind": "param",
+   "source": "starmap.md:8",
+   "sections": [
+    "§ ref_hops_max"
+   ]
+  },
+  {
+   "from": "semantic-zoom-architecture:starmap.md",
+   "to": "skill-starmap:zoom.schema.json",
+   "kind": "ref",
+   "source": "starmap.md 第 1 条",
+   "note": "字段、节点类型和边类型只在这里定义"
+  },
+  {
+   "from": "semantic-zoom-architecture:starmap.md",
+   "to": "skill-starmap:tools/zoomgen.py",
+   "kind": "runs",
+   "source": "starmap.md 第 2、4 条"
+  }
+ ],
+ "checks": {
+  "broken": [],
+  "unresolved": [],
+  "duplicates": [],
+  "structure": [],
+  "info": [],
+  "accepted": [],
+  "depth": [
+   {
+    "node": "semantic-zoom-architecture",
+    "hops": 2,
+    "files": 5,
+    "path": [
+     "semantic-zoom-architecture",
+     "semantic-zoom-architecture:daily-change.md",
+     "semantic-zoom-architecture:metrics.md"
+    ]
+   },
+   {
+    "node": "semantic-zoom-architecture:delivery-checklist.md",
+    "hops": 2,
+    "files": 3,
+    "path": [
+     "semantic-zoom-architecture:delivery-checklist.md",
+     "semantic-zoom-architecture:file-structure.md",
+     "semantic-zoom-architecture:layers.md"
+    ]
+   },
+   {
+    "node": "semantic-zoom-architecture:new-project.md",
+    "hops": 3,
+    "files": 4,
+    "path": [
+     "semantic-zoom-architecture:new-project.md",
+     "semantic-zoom-architecture:delivery-checklist.md",
+     "semantic-zoom-architecture:file-structure.md",
+     "semantic-zoom-architecture:layers.md"
+    ]
+   },
+   {
+    "node": "semantic-zoom-architecture:restructure.md",
+    "hops": 2,
+    "files": 3,
+    "path": [
+     "semantic-zoom-architecture:restructure.md",
+     "semantic-zoom-architecture:daily-change.md",
+     "semantic-zoom-architecture:metrics.md"
+    ]
+   },
+   {
+    "node": "semantic-zoom-architecture:split.md",
+    "hops": 2,
+    "files": 6,
+    "path": [
+     "semantic-zoom-architecture:split.md",
+     "semantic-zoom-architecture:file-structure.md",
+     "semantic-zoom-architecture:layers.md"
+    ]
+   }
+  ],
+  "cycles": [
+   {
+    "node": "semantic-zoom-architecture:file-structure.md",
+    "nodes": [
+     "semantic-zoom-architecture:file-structure.md",
+     "semantic-zoom-architecture:layers.md"
+    ],
+    "why": "这些文件互相引用成圈"
+   }
+  ]
+ }
+}

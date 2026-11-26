@@ -1,0 +1,23 @@
+{
+ "zoom": "2.0",
+ "manifests": [
+  {
+   "file": "semantic-zoom-architecture.zoom.json",
+   "id": "semantic-zoom-architecture",
+   "title": "语义缩放架构（人与 AI 的协作架构法）",
+   "zoom": "2.0"
+  },
+  {
+   "file": "semantic-zoom-starmap.zoom.json",
+   "id": "semantic-zoom-starmap",
+   "title": "Semantic Zoom Architecture + Skill Starmap",
+   "zoom": "2.0"
+  },
+  {
+   "file": "skill-starmap.zoom.json",
+   "id": "skill-starmap",
+   "title": "Skill Starmap v2.4",
+   "zoom": "2.0"
+  }
+ ]
+}

@@ -1,0 +1,7 @@
+{
+ "note": "架构规则里的阈值，只在这里写数。都是暂定值：等 sza.py stats 攒够两周数据再调，调的时候只改这里。",
+ "ref_hops_max": 3,
+ "split_lines": 150,
+ "cochange_min": 3,
+ "cochange_share": 0.6
+}

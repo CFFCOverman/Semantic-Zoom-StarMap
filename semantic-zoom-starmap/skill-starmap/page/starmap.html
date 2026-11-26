@@ -1,0 +1,910 @@
+<!-- Copyright (c) 2026 Xuhao Chao. All rights reserved. Proprietary; see LICENSE at the repository root. -->
+<title>Skill Starmap</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600&family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* 布局：整屏星图（canvas）+ 顶栏（名字、搜索、层级路径）+ 右侧详情栏（手机上是底部抽屉）+ 左下图例 */
+:root {
+  --bg: #e8edf3; --ink: #142038; --muted: #56627b; --faint: #8a95ab;
+  --surface: #fbfcfe; --line: rgba(20,32,56,.14); --accent: #c25a10;
+  --star: #142038; --halo: rgba(20,32,56,.10);
+  --k-ref: #2457d6; --k-mention: #7a859b; --k-param: #0a7f99; --k-copy: #6d3fd6; --k-generates: #9b2fc9;
+  --k-dispatch: #c76a00; --k-runs: #d4471b; --k-reads: #0b8a5f; --k-writes: #2f8f1f; --k-follows: #c2266e;
+  --i-in: #2457d6; --i-out: #0b8a5f; --i-decide: #c76a00; --i-read: #0a7f99; --i-write: #2f8f1f; --i-never: #c62828;
+  --s0: #3b5ccc; --s1: #b0571c; --s2: #1f8a6e; --s3: #8a3fbf; --s4: #b8862a; --s5: #2e7fa8; --s6: #b23a63; --s7: #5d7a1e;
+  --f-display: "Space Grotesk", "Noto Sans SC", system-ui, sans-serif;
+  --f-body: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #070b16; --ink: #e7ebf5; --muted: #98a2bb; --faint: #5f6984;
+  --surface: #0f1526; --line: rgba(200,212,240,.14); --accent: #ffb347;
+  --star: #f4f1e8; --halo: rgba(255,240,210,.10);
+  --k-ref: #7ea6ff; --k-mention: #7c879f; --k-param: #4fd0e2; --k-copy: #b59cff; --k-generates: #da8cff;
+  --k-dispatch: #ffb347; --k-runs: #ff8a5b; --k-reads: #4fdc9c; --k-writes: #8fe07a; --k-follows: #ff7ab6;
+  --i-in: #7ea6ff; --i-out: #4fdc9c; --i-decide: #ffb347; --i-read: #4fd0e2; --i-write: #8fe07a; --i-never: #ff6b6b;
+  --s0: #8fa8ff; --s1: #ffae6b; --s2: #5fe0b8; --s3: #c99bff; --s4: #f2d27a; --s5: #6cc6f2; --s6: #ff8db3; --s7: #b7dc6a;
+  color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #070b16; --ink: #e7ebf5; --muted: #98a2bb; --faint: #5f6984;
+  --surface: #0f1526; --line: rgba(200,212,240,.14); --accent: #ffb347;
+  --star: #f4f1e8; --halo: rgba(255,240,210,.10);
+  --k-ref: #7ea6ff; --k-mention: #7c879f; --k-param: #4fd0e2; --k-copy: #b59cff; --k-generates: #da8cff;
+  --k-dispatch: #ffb347; --k-runs: #ff8a5b; --k-reads: #4fdc9c; --k-writes: #8fe07a; --k-follows: #ff7ab6;
+  --i-in: #7ea6ff; --i-out: #4fdc9c; --i-decide: #ffb347; --i-read: #4fd0e2; --i-write: #8fe07a; --i-never: #ff6b6b;
+  --s0: #8fa8ff; --s1: #ffae6b; --s2: #5fe0b8; --s3: #c99bff; --s4: #f2d27a; --s5: #6cc6f2; --s6: #ff8db3; --s7: #b7dc6a;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); overflow: hidden; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+#sky { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; cursor: grab; display: block; }
+#sky.dragging { cursor: grabbing; }
+.bar { position: fixed; top: env(safe-area-inset-top, 0px); left: 0; right: 0; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px;
+  padding-block: 12px 8px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); pointer-events: none; }
+.bar > * { pointer-events: auto; }
+.brand { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.brand h1 { margin: 0; font: 600 19px/1.1 var(--f-display); letter-spacing: .01em; }
+.brand .stats { font: 400 11.5px/1.3 var(--f-mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+.search { position: relative; flex: 1 1 220px; max-width: 360px; min-width: 0; }
+.search input { width: 100%; box-sizing: border-box; font: 400 14px var(--f-body); color: var(--ink); background: var(--surface); border: 1px solid var(--line);
+  border-radius: 8px; padding: 8px 10px 8px 30px; outline: none; }
+.search input:focus-visible { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent); }
+.search svg { position: absolute; left: 9px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; stroke: var(--muted); fill: none; stroke-width: 2; }
+.results { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
+  max-height: 50vh; overflow: auto; margin: 0; padding: 4px; list-style: none; box-shadow: 0 10px 30px rgba(0,0,0,.18); }
+.results li { padding: 7px 8px; border-radius: 6px; cursor: pointer; display: grid; gap: 1px; }
+.results li[aria-selected="true"], .results li:hover { background: color-mix(in srgb, var(--accent) 13%, transparent); }
+.results .t { font-size: 13.5px; }
+.results .m { font: 400 11px var(--f-mono); color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tools { display: flex; gap: 6px; }
+button { font: 500 13px var(--f-body); color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 7px 11px; cursor: pointer; }
+button:hover { border-color: color-mix(in srgb, var(--ink) 35%, transparent); }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.crumbs { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; font-size: 12.5px; color: var(--muted); min-height: 18px; }
+.crumbs a { color: var(--muted); text-decoration: none; cursor: pointer; border-radius: 4px; padding: 1px 3px; }
+.crumbs a:hover { color: var(--ink); background: var(--line); }
+.crumbs a:last-child { color: var(--ink); font-weight: 500; }
+.crumbs .sep { color: var(--faint); }
+.layer { font: 500 10.5px var(--f-mono); letter-spacing: .06em; color: var(--accent); border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent); border-radius: 4px; padding: 0 4px; }
+
+.panel { position: fixed; z-index: 6; top: calc(env(safe-area-inset-top, 0px) + 96px); right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  width: 340px; background: color-mix(in srgb, var(--surface) 94%, transparent); border: 1px solid var(--line); border-radius: 12px;
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); overflow: auto; padding: 16px 16px 18px; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px; }
+.panel h2 { margin: 0; font: 600 18px/1.3 var(--f-display); text-wrap: balance; overflow-wrap: anywhere; }
+.panel .kicker { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font: 400 11.5px var(--f-mono); color: var(--muted); }
+.panel .role { margin: 0; font-size: 13.5px; line-height: 1.6; color: var(--ink); }
+.src { font: 400 12px/1.5 var(--f-mono); color: var(--muted); background: var(--line); border-radius: 6px; padding: 6px 8px; overflow-wrap: anywhere; }
+.panel h3 { margin: 0 0 6px; font: 500 11px var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--faint); }
+.chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.chip { font-size: 12px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--ink); }
+.chip.def { border-color: color-mix(in srgb, var(--accent) 50%, transparent); }
+.badge { font: 500 10.5px var(--f-mono); padding: 1px 6px; border-radius: 4px; background: var(--line); color: var(--muted); }
+.badge.warn { color: var(--i-never); background: color-mix(in srgb, var(--i-never) 14%, transparent); }
+.list { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.list li { display: grid; grid-template-columns: 10px 1fr; gap: 8px; align-items: baseline; font-size: 13px; padding: 4px 6px; border-radius: 6px; cursor: pointer; min-width: 0; }
+.list li:hover { background: var(--line); }
+.list li .dot { width: 8px; height: 8px; border-radius: 50%; align-self: center; }
+.list li .txt { min-width: 0; overflow-wrap: anywhere; }
+.list li .sub { display: block; font: 400 11px var(--f-mono); color: var(--muted); }
+.list li.static { cursor: default; } .list li.static:hover { background: none; }
+.more { font-size: 12px; color: var(--muted); padding-left: 6px; }
+.issue { font-size: 12.5px; line-height: 1.5; color: var(--muted); }
+.issue b { color: var(--i-never); font-weight: 500; }
+.howto { font-size: 13px; line-height: 1.65; color: var(--muted); margin: 0; padding-left: 18px; }
+.howto code, .panel code { font: 400 12px var(--f-mono); color: var(--ink); }
+/* 用 AI 改：按钮 + 指令原文（剪贴板被拦时直接选中这段字） */
+.edit { display: grid; gap: 6px; }
+.edit .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.edit button.go { border-color: color-mix(in srgb, var(--accent) 60%, transparent); color: var(--accent); font-weight: 600; }
+.edit .hint { font-size: 12px; color: var(--muted); }
+.edit textarea { width: 100%; box-sizing: border-box; min-height: 96px; resize: vertical; font: 400 12px/1.55 var(--f-mono); color: var(--ink);
+  background: var(--line); border: 1px solid transparent; border-radius: 6px; padding: 6px 8px; }
+.edit textarea:focus-visible { outline: none; border-color: var(--accent); }
+
+.legend { position: fixed; z-index: 5; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(14px + env(safe-area-inset-bottom, 0px)); display: flex; flex-wrap: wrap; gap: 5px; max-width: min(560px, calc(100vw - 400px)); }
+.legend button { font-size: 11.5px; padding: 3px 9px 3px 7px; border-radius: 999px; display: inline-flex; align-items: center; gap: 6px; background: color-mix(in srgb, var(--surface) 88%, transparent); }
+.legend button .sw { width: 14px; height: 0; border-top: 2px solid currentColor; }
+.legend button[aria-pressed="false"] { opacity: .45; }
+.legend button[aria-pressed="false"] .sw { border-top-style: dotted; }
+.tip { position: fixed; z-index: 8; pointer-events: none; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 6px 9px; font-size: 12.5px; max-width: 260px; box-shadow: 0 8px 24px rgba(0,0,0,.18); }
+.tip .m { display: block; color: var(--muted); font-size: 11.5px; margin-top: 2px; }
+.drop { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; background: color-mix(in srgb, var(--bg) 70%, transparent); border: 2px dashed var(--accent); font: 600 20px var(--f-display); color: var(--ink); }
+.toast { position: fixed; z-index: 21; left: 50%; transform: translateX(-50%); bottom: calc(60px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--bg); padding: 8px 14px; border-radius: 8px; font-size: 13px; max-width: calc(100vw - 32px); }
+@media (max-width: 760px) {
+  .panel { top: auto; left: max(10px, env(safe-area-inset-left, 0px)); right: max(10px, env(safe-area-inset-right, 0px)); width: auto; max-height: 42vh; bottom: calc(10px + env(safe-area-inset-bottom, 0px)); }
+  .panel.min { max-height: 64px; overflow: hidden; }
+  .legend { display: none; }
+  .brand h1 { font-size: 17px; }
+  .tools button { padding: 6px 9px; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+
+<canvas id="sky" aria-label="技能星图：拉远看全景，点一颗星展开下一层"></canvas>
+<header class="bar">
+  <div class="brand"><h1>Skill Starmap</h1><span class="stats" id="stats">读取清单…</span></div>
+  <div class="search">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
+    <input id="q" type="search" placeholder="搜节点或概念，如「推送五项」" autocomplete="off" aria-label="搜索节点或概念">
+    <ul class="results" id="results" role="listbox" hidden></ul>
+  </div>
+  <div class="tools">
+    <button id="home" title="回到全景（0）">全景</button>
+    <button id="up" title="上一层（Esc）">上一层</button>
+    <button id="add" title="把一份 zoom.json 加进本机星图">加清单</button>
+    <input id="file" type="file" accept=".json,application/json" multiple hidden>
+  </div>
+  <nav class="crumbs" id="crumbs" aria-label="层级路径"></nav>
+</header>
+<aside class="panel" id="panel" aria-live="polite"></aside>
+<div class="legend" id="legend" aria-label="连线类型"></div>
+<div class="tip" id="tip" hidden></div>
+<div class="drop" id="drop" hidden>放下 zoom.json，加进本机星图</div>
+
+<script>
+(() => {
+"use strict";
+const KINDS = {
+  ref: "引用", mention: "提及", param: "读数值", copy: "生成副本", generates: "生成",
+  dispatch: "派工", runs: "调度", reads: "读", writes: "写", follows: "遵循"
+};
+const DIRS = { in: "下指令", out: "收结果", decide: "决定权", read: "读", write: "写", never: "不做" };
+const DASH = { mention: [2, 4], param: [5, 4], follows: [10, 5], copy: [1, 3] };
+const OPEN_LO = 34, OPEN_HI = 72;
+// 「用 AI 改」指令模板：唯一出处。{sys} 星系 id，{src} 要改的文件或文件夹，{loc} 源目录，{refs} 星图里指向它的连线
+const EDIT_TEMPLATE = "改 {sys} 的 {src}，源目录在 {loc}。先按 semantic-zoom-architecture 的 daily-change.md 做：列出谁引用它，改前快照，只改这一处，改完重新生成星图。{refs}";
+const EDIT_REFS_MAX = 8;
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const $ = (id) => document.getElementById(id);
+const cv = $("sky"), ctx = cv.getContext("2d");
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+};
+
+// ---------- 状态 ----------
+const S = {
+  manifests: new Map(),            // id -> {m, local}
+  nodes: new Map(), edges: [], ifaces: [], systems: [],
+  cam: { x: 0, y: 0, k: 1 }, fly: null,
+  sel: null, hover: null,
+  kindsOn: store.get("starmap.kinds", Object.fromEntries(Object.keys(KINDS).map(k => [k, true]))),
+  W: 0, H: 0, dpr: 1, colors: {}, t0: performance.now()
+};
+
+// ---------- 颜色 ----------
+function readColors() {
+  const cs = getComputedStyle(document.documentElement), g = (n) => cs.getPropertyValue(n).trim();
+  const c = { bg: g("--bg"), ink: g("--ink"), muted: g("--muted"), faint: g("--faint"), line: g("--line"),
+    accent: g("--accent"), star: g("--star"), halo: g("--halo"), surface: g("--surface"),
+    body: g("--f-body"), mono: g("--f-mono"), display: g("--f-display"), k: {}, i: {}, s: [] };
+  for (const k in KINDS) c.k[k] = g("--k-" + k);
+  for (const d in DIRS) c.i[d] = g("--i-" + d);
+  for (let i = 0; i < 8; i++) c.s.push(g("--s" + i));
+  S.colors = c;
+}
+readColors();
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", readColors);
+new MutationObserver(readColors).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+// ---------- 读取清单 ----------
+function valid(m) {
+  return m && m.zoom && m.system && typeof m.system.id === "string" && Array.isArray(m.nodes) && Array.isArray(m.edges);
+}
+async function boot() {
+  let loaded = 0;
+  try {
+    const idx = await fetch("manifests/index.json").then(r => { if (!r.ok) throw 0; return r.json(); });
+    const all = await Promise.all(idx.manifests.map(x => fetch("manifests/" + x.file).then(r => r.ok ? r.json() : null).catch(() => null)));
+    for (const m of all) if (valid(m)) { S.manifests.set(m.system.id, { m, local: false }); loaded++; }
+  } catch (e) { /* 没有发布的清单时只显示本机加入的 */ }
+  for (const m of store.get("starmap.local", [])) if (valid(m)) S.manifests.set(m.system.id, { m, local: true });
+  rebuild();
+  fitAll(false);
+  renderPanel();
+  if (!S.manifests.size) toast("没有读到清单：把 zoom.json 拖进页面，或点「加清单」");
+}
+
+// ---------- 合并与布局 ----------
+function rebuild() {
+  const N = new Map();
+  const U = { id: "__u", title: "全景", kind: "universe", layer: -1, children: [], parent: null };
+  const C = { id: "__core", title: "你 ↔ Claude", kind: "core", layer: 0, children: [], parent: "__u", role: "人与 AI 的接口：每个星系从这里接收指令、把结果送回来" };
+  N.set(U.id, U); N.set(C.id, C);
+  S.systems = [];
+  let si = 0;
+  for (const [id, { m, local }] of S.manifests) {
+    const hue = si++ % 8;
+    for (const n of m.nodes) {
+      const x = Object.assign({}, n, { children: [], sys: id, hue, local });
+      if (n.id === id) { x.parent = "__u"; x.version = n.version || m.system.version; x.manifest = m; S.systems.push(x); }
+      N.set(n.id, x);
+    }
+    if (!N.has(id)) { const x = { id, title: m.system.title || id, kind: "system", layer: 0, parent: "__u", children: [], sys: id, hue, local, manifest: m }; N.set(id, x); S.systems.push(x); }
+  }
+  for (const n of N.values()) {
+    if (n.id === "__u") continue;
+    if (!n.parent || !N.has(n.parent)) n.parent = n.kind === "system" || n.id === "__core" ? "__u" : n.sys;
+    N.get(n.parent).children.push(n.id);
+  }
+  // 路径与权重
+  const walk = (id, path) => {
+    const n = N.get(id); n.path = path.concat(id); n.w = 1;
+    for (const c of n.children) n.w += walk(c, n.path);
+    return n.w;
+  };
+  walk("__u", []);
+  // 边
+  const edges = [], ifaces = [];
+  for (const [id, { m }] of S.manifests) {
+    for (const e of m.edges) {
+      if (!N.has(e.from)) continue;
+      edges.push({ from: e.from, to: e.to, kind: e.kind, source: e.source, sections: e.sections, note: e.note, n: e.n || 1, dangling: !N.has(e.to) });
+    }
+    for (const it of m.interface || []) {
+      const via = it.via && N.has(it.via) ? it.via : id;
+      ifaces.push({ sys: id, dir: it.dir, label: it.label, via, source: it.source });
+    }
+  }
+  for (const n of N.values()) { n.out = []; n.in = []; }
+  for (const e of edges) { N.get(e.from).out.push(e); if (!e.dangling) N.get(e.to).in.push(e); }
+  S.nodes = N; S.edges = edges; S.ifaces = ifaces;
+  layout();
+  const shown = edges.filter(e => !e.dangling).length;
+  $("stats").textContent = `${S.systems.length} 个星系 · ${N.size - 2} 颗星 · ${shown} 条连线`;
+  buildLegend();
+}
+
+function layout() {
+  const N = S.nodes, U = N.get("__u"), C = N.get("__core");
+  const coreR = 70;
+  C.x = 0; C.y = 0; C.r = coreR;
+  const sys = S.systems;
+  sys.forEach(s => s.r = 70 + 16 * Math.sqrt(s.w));
+  const gap = 80, maxR = Math.max(0, ...sys.map(s => s.r));
+  const circ = sys.reduce((a, s) => a + 2 * s.r + gap, 0);
+  const ring = Math.max(circ / (2 * Math.PI), coreR + maxR + 90);
+  // 按周长分配角度，大的在上方
+  const order = sys.slice().sort((a, b) => b.w - a.w);
+  const alt = []; order.forEach((s, i) => i % 2 ? alt.push(s) : alt.unshift(s));
+  let a = -Math.PI / 2 - Math.PI * (2 * alt[0]?.r + gap || 0) / (circ || 1);
+  const scale = ring * 2 * Math.PI / (circ || 1);
+  for (const s of alt) {
+    const span = (2 * s.r + gap) * scale / ring;
+    const mid = a + span / 2; a += span;
+    place(s, Math.cos(mid) * ring, Math.sin(mid) * ring, s.r);
+  }
+  U.x = 0; U.y = 0; U.r = ring + maxR + 60;
+}
+function place(n, x, y, r) {
+  n.x = x; n.y = y; n.r = r;
+  const kids = n.children.map(id => S.nodes.get(id));
+  if (!kids.length) { n.body = r; return; }
+  if (kids.length === 1) {
+    n.body = r * 0.13;
+    place(kids[0], x, y + r * 0.5, r * 0.36);
+    return;
+  }
+  const rho = r * 0.62;
+  const ws = kids.map(k => Math.sqrt(k.w)), tot = ws.reduce((p, q) => p + q, 0);
+  let ang = -Math.PI / 2 - Math.PI * ws[0] / tot, maxC = 0;
+  kids.forEach((k, i) => {
+    const span = 2 * Math.PI * ws[i] / tot;
+    const cr = Math.min(r * 0.34, rho * Math.sin(Math.min(span, Math.PI) / 2) * 0.9);
+    const mid = ang + span / 2; ang += span; maxC = Math.max(maxC, cr);
+    place(k, x + Math.cos(mid) * rho, y + Math.sin(mid) * rho, cr);
+  });
+  n.body = Math.max(r * 0.05, Math.min(r * 0.14, rho - maxC - r * 0.03));
+}
+
+// ---------- 相机 ----------
+function resize() {
+  S.dpr = Math.min(2, window.devicePixelRatio || 1);
+  S.W = cv.clientWidth; S.H = cv.clientHeight;
+  cv.width = Math.round(S.W * S.dpr); cv.height = Math.round(S.H * S.dpr);
+}
+new ResizeObserver(resize).observe(cv); resize();
+const panelW = () => (S.W > 760 ? 372 : 0);
+const viewC = () => ({ cx: (S.W - panelW()) / 2, cy: S.W > 760 ? S.H / 2 + 30 : S.H * 0.36 });
+const toScreen = (x, y) => { const v = viewC(); return [v.cx + (x - S.cam.x) * S.cam.k, v.cy + (y - S.cam.y) * S.cam.k]; };
+const toWorld = (sx, sy) => { const v = viewC(); return [S.cam.x + (sx - v.cx) / S.cam.k, S.cam.y + (sy - v.cy) / S.cam.k]; };
+
+function frameFor(n) {
+  const v = Math.min(S.W - panelW(), S.W > 760 ? S.H - 140 : S.H * 0.52);
+  const target = n.children && n.children.length ? v * 0.44 : Math.min(90, v * 0.2);
+  return { x: n.x, y: n.y, k: target / n.r };
+}
+function flyTo(to, ms = 900) {
+  if (reduce || !ms) { S.cam = { ...to }; S.fly = null; return; }
+  S.fly = { from: { ...S.cam }, to, t0: performance.now(), ms };
+}
+function stepFly(now) {
+  const f = S.fly; if (!f) return;
+  let t = Math.min(1, (now - f.t0) / f.ms);
+  const e = t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  // 先拉远再推近：中途按两端距离放松缩放
+  const d = Math.hypot(f.to.x - f.from.x, f.to.y - f.from.y);
+  const kMid = Math.min(f.from.k, f.to.k, (Math.min(S.W, S.H) * 0.9) / (d + 1e-6));
+  const lk0 = Math.log(f.from.k), lk1 = Math.log(f.to.k), lkm = Math.log(Math.min(kMid, Math.min(f.from.k, f.to.k)));
+  const bow = Math.sin(Math.PI * e) * Math.max(0, Math.min(lk0, lk1) - lkm);
+  S.cam.k = Math.exp(lk0 + (lk1 - lk0) * e - bow);
+  S.cam.x = f.from.x + (f.to.x - f.from.x) * e;
+  S.cam.y = f.from.y + (f.to.y - f.from.y) * e;
+  if (t >= 1) S.fly = null;
+}
+function fitAll(anim = true) {
+  const U = S.nodes.get("__u"); if (!U) return;
+  const v = Math.min(S.W - panelW(), S.W > 760 ? S.H - 120 : S.H * 0.55);
+  flyTo({ x: 0, y: 0, k: (v / 2) / U.r }, anim ? 900 : 0);
+}
+
+// ---------- 绘制 ----------
+const smooth = (a, b, x) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+function openness(n) { if (n.id === "__u") return 1; if (!n.children.length) return 0; return smooth(OPEN_LO, OPEN_HI, n.r * S.cam.k); }
+function rep(id) {
+  const n = S.nodes.get(id); if (!n) return null;
+  for (const p of n.path) { const q = S.nodes.get(p); if (q.id !== "__u" && q.open < 0.5) return q; }
+  return n;
+}
+function isAnc(a, b) { const n = S.nodes.get(b); return !!n && n.path.includes(a); }
+function stars() {
+  if (!S.sky) { S.sky = []; let seed = 7; const r = () => (seed = (seed * 16807) % 2147483647) / 2147483647; for (let i = 0; i < 260; i++) S.sky.push([r(), r(), r(), r()]); }
+  const t = (performance.now() - S.t0) / 1000, c = S.colors;
+  ctx.fillStyle = c.star;
+  for (const [x, y, z, p] of S.sky) {
+    const px = ((x * 1.3 - S.cam.x * 0.00004 * (1 + z)) % 1 + 1) % 1 * S.W;
+    const py = ((y * 1.3 - S.cam.y * 0.00004 * (1 + z)) % 1 + 1) % 1 * S.H;
+    ctx.globalAlpha = (0.12 + 0.28 * z) * (reduce ? 1 : 0.65 + 0.35 * Math.sin(t * (0.6 + p) + p * 20));
+    ctx.fillRect(px, py, z > 0.85 ? 1.6 : 1, z > 0.85 ? 1.6 : 1);
+  }
+  ctx.globalAlpha = 1;
+}
+function hueOf(n) { return S.colors.s[n.hue || 0]; }
+
+function draw(now) {
+  stepFly(now);
+  const c = S.colors, k = S.cam.k;
+  ctx.setTransform(S.dpr, 0, 0, S.dpr, 0, 0);
+  ctx.clearRect(0, 0, S.W, S.H);
+  stars();
+  // 打开程度与可见集
+  const vis = [];
+  const visit = (id, parentOpen) => {
+    const n = S.nodes.get(id);
+    n.open = openness(n); n.alpha = parentOpen;
+    const [sx, sy] = toScreen(n.x, n.y), sr = n.r * k;
+    n.sx = sx; n.sy = sy; n.sr = sr;
+    if (sx + sr < -40 || sx - sr > S.W + 40 || sy + sr < -40 || sy - sr > S.H + 40) { n.off = true; } else n.off = false;
+    if (id !== "__u") vis.push(n);
+    if (n.open > 0.02 && !n.off) for (const ch of n.children) visit(ch, Math.min(parentOpen, n.open));
+    else for (const ch of n.children) markHidden(ch);
+  };
+  const markHidden = (id) => { const n = S.nodes.get(id); n.open = 0; n.alpha = 0; n.off = true; for (const ch of n.children) markHidden(ch); };
+  visit("__u", 1);
+  const sel = S.sel, hov = S.hover;
+  const focusId = hov || sel;
+  // 开着的节点画成轨道盘
+  for (const n of vis) {
+    if (n.off || n.open <= 0.02 || n.kind === "core") continue;
+    ctx.globalAlpha = n.alpha * n.open;
+    ctx.beginPath(); ctx.arc(n.sx, n.sy, n.sr, 0, Math.PI * 2);
+    ctx.fillStyle = c.halo; ctx.fill();
+    ctx.strokeStyle = n.id === sel ? c.accent : c.line; ctx.lineWidth = n.id === sel ? 1.5 : 1; ctx.stroke();
+    ctx.beginPath(); ctx.setLineDash([2, 6]); ctx.arc(n.sx, n.sy, n.sr * 0.62, 0, Math.PI * 2); ctx.strokeStyle = c.line; ctx.stroke(); ctx.setLineDash([]);
+  }
+  ctx.globalAlpha = 1;
+  // 连线：两端都抬到当前看得见的那一层
+  const agg = new Map();
+  const t = (now - S.t0) / 1000;
+  for (const e of S.edges) {
+    if (e.dangling || S.kindsOn[e.kind] === false) continue;
+    const a = rep(e.from), b = rep(e.to);
+    if (!a || !b || a === b || isAnc(a.id, b.id) || isAnc(b.id, a.id)) continue;
+    if (a.alpha < 0.05 || b.alpha < 0.05) continue;
+    const hl = focusId ? (isAnc(focusId, e.from) || isAnc(focusId, e.to)) : false;
+    const key = a.id + "|" + b.id + "|" + e.kind;
+    const g = agg.get(key) || { a, b, kind: e.kind, n: 0, hl: false };
+    g.n += e.n; g.hl = g.hl || hl; agg.set(key, g);
+  }
+  for (const it of S.ifaces) {
+    const b = rep(it.via); if (!b || b.alpha < 0.05) continue;
+    const a = S.nodes.get("__core");
+    const hl = focusId ? (focusId === "__core" || isAnc(focusId, it.via)) : false;
+    const key = "__core|" + b.id + "|if-" + it.dir;
+    const g = agg.get(key) || { a, b, kind: "if-" + it.dir, n: 0, hl: false, iface: it.dir };
+    g.n++; g.hl = g.hl || hl; agg.set(key, g);
+  }
+  const anyFocus = !!focusId;
+  for (const g of agg.values()) drawEdge(g, anyFocus, t);
+  // 星
+  for (const n of vis) drawNode(n, sel, hov);
+  // 标签
+  for (const n of vis) drawLabel(n, sel);
+  requestAnimationFrame(draw);
+}
+function drawEdge(g, anyFocus, t) {
+  const c = S.colors, { a, b } = g;
+  const x1 = a.sx, y1 = a.sy, x2 = b.sx, y2 = b.sy;
+  if (Math.max(x1, x2) < -50 || Math.min(x1, x2) > S.W + 50 || Math.max(y1, y2) < -50 || Math.min(y1, y2) > S.H + 50) {
+    // 两端都在屏外也可能穿过屏幕，粗略判断
+    if ((x1 < 0 && x2 < 0) || (x1 > S.W && x2 > S.W) || (y1 < 0 && y2 < 0) || (y1 > S.H && y2 > S.H)) return;
+  }
+  const col = g.iface ? c.i[g.iface] : c.k[g.kind];
+  const dx = x2 - x1, dy = y2 - y1, d = Math.hypot(dx, dy) || 1;
+  const bend = g.iface ? 0.08 : 0.18;
+  const mx = (x1 + x2) / 2 - dy / d * d * bend, my = (y1 + y2) / 2 + dx / d * d * bend;
+  const base = g.iface ? 0.32 : (g.kind === "mention" ? 0.22 : 0.42);
+  ctx.globalAlpha = Math.min(a.alpha, b.alpha) * (anyFocus ? (g.hl ? 0.95 : 0.07) : base);
+  ctx.strokeStyle = col;
+  ctx.lineWidth = Math.min(4, 0.8 + Math.log2(1 + g.n) * 0.7) * (g.hl ? 1.5 : 1);
+  const dash = g.iface ? (g.iface === "never" ? [3, 4] : [8, 5]) : DASH[g.kind];
+  if (g.hl && !reduce) { ctx.setLineDash(dash || [10, 6]); ctx.lineDashOffset = -t * 28; }
+  else ctx.setLineDash(dash || []);
+  ctx.beginPath(); ctx.moveTo(x1, y1); ctx.quadraticCurveTo(mx, my, x2, y2); ctx.stroke();
+  ctx.setLineDash([]);
+  // 箭头
+  if (g.hl || d > 60) {
+    const tx = x2 - mx, ty = y2 - my, tl = Math.hypot(tx, ty) || 1;
+    const rr = Math.max(4, (b.open > 0.5 ? b.body * S.cam.k : b.sr * 0.55)) + 3;
+    const px = x2 - tx / tl * rr, py = y2 - ty / tl * rr, s = g.hl ? 7 : 5;
+    ctx.beginPath();
+    ctx.moveTo(px, py);
+    ctx.lineTo(px - tx / tl * s - ty / tl * s * 0.55, py - ty / tl * s + tx / tl * s * 0.55);
+    ctx.lineTo(px - tx / tl * s + ty / tl * s * 0.55, py - ty / tl * s - tx / tl * s * 0.55);
+    ctx.closePath(); ctx.fillStyle = col; ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
+function drawNode(n, sel, hov) {
+  if (n.off || n.alpha < 0.02) return;
+  const c = S.colors, k = S.cam.k;
+  if (n.kind === "core") { drawCore(n); return; }
+  const col = hueOf(n);
+  const closedR = n.sr * (1 - n.open) + (n.body || n.r) * k * n.open;
+  const r = Math.max(1.2, n.children.length ? closedR : Math.min(n.sr, 26 + n.sr * 0.15));
+  ctx.globalAlpha = n.alpha;
+  // 光晕
+  if (r > 3) {
+    const gr = ctx.createRadialGradient(n.sx, n.sy, r * 0.2, n.sx, n.sy, r * 1.9);
+    gr.addColorStop(0, col); gr.addColorStop(1, "transparent");
+    ctx.globalAlpha = n.alpha * (n.kind === "system" ? 0.35 : 0.18);
+    ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(n.sx, n.sy, r * 1.9, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = n.alpha;
+  }
+  ctx.beginPath();
+  if (n.kind === "param") { ctx.moveTo(n.sx, n.sy - r); ctx.lineTo(n.sx + r, n.sy); ctx.lineTo(n.sx, n.sy + r); ctx.lineTo(n.sx - r, n.sy); ctx.closePath(); }
+  else if (n.kind === "tool" || (n.kind === "file" && n.layer === 3)) { const q = r * 0.85; ctx.roundRect ? ctx.roundRect(n.sx - q, n.sy - q, q * 2, q * 2, q * 0.3) : ctx.rect(n.sx - q, n.sy - q, q * 2, q * 2); }
+  else ctx.arc(n.sx, n.sy, r, 0, Math.PI * 2);
+  const leafish = (n.kind === "section" || n.kind === "file") && !n.children.length;
+  ctx.fillStyle = leafish ? c.surface : col;
+  ctx.fill();
+  ctx.lineWidth = leafish ? 1.4 : 1;
+  ctx.strokeStyle = leafish ? col : c.bg;
+  ctx.stroke();
+  if (n.kind === "dir" && r > 6) { ctx.beginPath(); ctx.arc(n.sx, n.sy, r * 0.55, 0, Math.PI * 2); ctx.strokeStyle = c.bg; ctx.stroke(); }
+  if (n.generated && r > 4) { ctx.setLineDash([2, 3]); ctx.beginPath(); ctx.arc(n.sx, n.sy, r + 3, 0, Math.PI * 2); ctx.strokeStyle = col; ctx.stroke(); ctx.setLineDash([]); }
+  if (n.issues && r > 3) { ctx.beginPath(); ctx.arc(n.sx + r * 0.75, n.sy - r * 0.75, Math.max(2.5, r * 0.18), 0, Math.PI * 2); ctx.fillStyle = c.i.never; ctx.fill(); }
+  if (n.id === sel || n.id === hov) {
+    ctx.beginPath(); ctx.arc(n.sx, n.sy, (n.open > 0.5 ? n.sr : r) + 4, 0, Math.PI * 2);
+    ctx.strokeStyle = c.accent; ctx.lineWidth = n.id === sel ? 2 : 1.2; ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+}
+function drawCore(n) {
+  const c = S.colors, r = n.sr, t = (performance.now() - S.t0) / 1000;
+  const spin = reduce ? 0.6 : t * 0.25;
+  const d = r * 0.42, pts = [[Math.cos(spin) * d, Math.sin(spin) * d, "你"], [-Math.cos(spin) * d, -Math.sin(spin) * d, "Claude"]];
+  ctx.beginPath(); ctx.arc(n.sx, n.sy, d, 0, Math.PI * 2); ctx.setLineDash([2, 5]); ctx.strokeStyle = c.line; ctx.stroke(); ctx.setLineDash([]);
+  for (const [x, y, lab] of pts) {
+    const rr = Math.max(3, r * 0.17);
+    const gr = ctx.createRadialGradient(n.sx + x, n.sy + y, 0, n.sx + x, n.sy + y, rr * 2.6);
+    gr.addColorStop(0, c.accent); gr.addColorStop(1, "transparent");
+    ctx.globalAlpha = 0.4; ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(n.sx + x, n.sy + y, rr * 2.6, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = 1; ctx.fillStyle = c.accent; ctx.beginPath(); ctx.arc(n.sx + x, n.sy + y, rr, 0, Math.PI * 2); ctx.fill();
+    if (r > 22) { ctx.fillStyle = c.ink; ctx.font = `500 ${Math.min(14, Math.max(10, r * 0.16))}px ${c.body}`; ctx.textAlign = "center"; ctx.textBaseline = "top"; ctx.fillText(lab, n.sx + x, n.sy + y + rr + 4); }
+  }
+  if (S.sel === "__core") { ctx.beginPath(); ctx.arc(n.sx, n.sy, r + 4, 0, Math.PI * 2); ctx.strokeStyle = c.accent; ctx.lineWidth = 2; ctx.stroke(); }
+}
+function drawLabel(n, sel) {
+  if (n.off || n.alpha < 0.3 || n.kind === "core") return;
+  const c = S.colors;
+  const isSys = n.kind === "system";
+  const opened = n.open > 0.45;
+  const sr = n.sr;
+  if (!opened && sr < (isSys ? 6 : 13) && n.id !== sel) return;
+  const size = isSys ? Math.max(12, Math.min(17, 10 + sr * 0.05)) : Math.max(10.5, Math.min(14, 9 + sr * 0.06));
+  ctx.font = `${isSys || opened ? 600 : 400} ${size}px ${isSys ? c.display : c.body}`;
+  ctx.textAlign = "center";
+  let txt = n.title, maxW = Math.max(70, opened ? sr * 1.6 : sr * 3.2);
+  while (ctx.measureText(txt).width > maxW && txt.length > 2) txt = txt.slice(0, -2) + "…";
+  let y;
+  if (opened) { ctx.textBaseline = "bottom"; y = n.sy - sr - 6; }
+  else { ctx.textBaseline = "top"; const r = n.children.length ? n.sr : Math.min(n.sr, 26 + n.sr * 0.15); y = n.sy + r + 5; }
+  ctx.globalAlpha = n.alpha * (opened ? Math.min(1, n.open * 1.4) : 1);
+  ctx.lineWidth = 3; ctx.strokeStyle = c.bg; ctx.lineJoin = "round"; ctx.strokeText(txt, n.sx, y);
+  ctx.fillStyle = n.id === sel ? c.accent : c.ink; ctx.fillText(txt, n.sx, y);
+  if (isSys && n.version && sr > 30 && !opened) { ctx.font = `400 10.5px ${c.mono}`; ctx.fillStyle = c.muted; ctx.fillText(n.version, n.sx, y + size + 3); }
+  ctx.globalAlpha = 1;
+}
+
+// ---------- 命中 ----------
+function hit(sx, sy) {
+  let best = null;
+  for (const n of S.nodes.values()) {
+    if (n.id === "__u" || n.off || !n.alpha || n.alpha < 0.3) continue;
+    const opened = n.open > 0.5;
+    const r = n.kind === "core" ? n.sr : opened ? Math.max(8, (n.body || 0) * S.cam.k + 4) : Math.max(7, (n.children.length ? n.sr : Math.min(n.sr, 26 + n.sr * 0.15)) + 3);
+    const d = Math.hypot(sx - n.sx, sy - n.sy);
+    if (d <= r && (!best || n.path.length > best.path.length)) best = n;
+  }
+  if (best) return best;
+  // 点在开着的轨道盘里空白处：选中这个盘
+  for (const n of S.nodes.values()) {
+    if (n.id === "__u" || n.off || n.open <= 0.5 || n.alpha < 0.3) continue;
+    if (Math.hypot(sx - n.sx, sy - n.sy) <= n.sr && (!best || n.path.length > best.path.length)) best = n;
+  }
+  return best;
+}
+
+// ---------- 交互 ----------
+const ptrs = new Map(); let drag = null, moved = false, pinch = null;
+cv.addEventListener("pointerdown", (e) => {
+  cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY]);
+  moved = false; S.fly = null;
+  if (ptrs.size === 1) drag = { x: e.clientX, y: e.clientY, cx: S.cam.x, cy: S.cam.y };
+  if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pinch = { d: Math.hypot(a[0] - b[0], a[1] - b[1]), k: S.cam.k }; }
+});
+cv.addEventListener("pointermove", (e) => {
+  if (ptrs.has(e.pointerId)) ptrs.set(e.pointerId, [e.clientX, e.clientY]);
+  if (pinch && ptrs.size === 2) {
+    const [a, b] = [...ptrs.values()]; const d = Math.hypot(a[0] - b[0], a[1] - b[1]);
+    zoomAt((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (pinch.k * d / pinch.d) / S.cam.k); moved = true; return;
+  }
+  if (drag) {
+    const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+    if (Math.abs(dx) + Math.abs(dy) > 4) { moved = true; cv.classList.add("dragging"); }
+    if (moved) { S.cam.x = drag.cx - dx / S.cam.k; S.cam.y = drag.cy - dy / S.cam.k; }
+    return;
+  }
+  const n = hit(e.clientX, e.clientY);
+  S.hover = n ? n.id : null;
+  showTip(n, e.clientX, e.clientY);
+  cv.style.cursor = n ? "pointer" : "";
+});
+const endPtr = (e) => {
+  const wasDrag = !!drag;
+  ptrs.delete(e.pointerId);
+  if (ptrs.size < 2) pinch = null;
+  if (ptrs.size === 0) {
+    drag = null; cv.classList.remove("dragging");
+    if (wasDrag && !moved && e.type === "pointerup") {
+      const n = hit(e.clientX, e.clientY);
+      if (n) select(n.id, true); else select(null);
+    }
+  }
+};
+cv.addEventListener("pointerup", endPtr);
+cv.addEventListener("pointercancel", endPtr);
+cv.addEventListener("pointerleave", () => { S.hover = null; $("tip").hidden = true; });
+cv.addEventListener("wheel", (e) => { e.preventDefault(); S.fly = null; zoomAt(e.clientX, e.clientY, Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0018))); }, { passive: false });
+function zoomAt(sx, sy, f) {
+  const [wx, wy] = toWorld(sx, sy);
+  S.cam.k = Math.max(1e-4, Math.min(5000, S.cam.k * f));
+  const [wx2, wy2] = toWorld(sx, sy);
+  S.cam.x += wx - wx2; S.cam.y += wy - wy2;
+}
+function showTip(n, x, y) {
+  const tip = $("tip");
+  if (!n || n.kind === "universe") { tip.hidden = true; return; }
+  tip.innerHTML = "";
+  const t = document.createElement("span"); t.textContent = n.title; tip.appendChild(t);
+  const m = document.createElement("span"); m.className = "m";
+  m.textContent = [n.kind === "core" ? "L0 人机接口" : "L" + n.layer, n.role].filter(Boolean).join(" · ");
+  tip.appendChild(m);
+  tip.hidden = false;
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  tip.style.left = Math.min(S.W - w - 8, x + 14) + "px"; tip.style.top = Math.min(S.H - h - 8, y + 14) + "px";
+}
+function select(id, fly) {
+  S.sel = id;
+  const n = id && S.nodes.get(id);
+  if (n && fly) flyTo(frameFor(n));
+  renderPanel(); renderCrumbs();
+}
+function up() {
+  const n = S.sel && S.nodes.get(S.sel);
+  if (!n) { fitAll(); return; }
+  const p = S.nodes.get(n.parent);
+  if (!p || p.id === "__u") { select(null); fitAll(); } else select(p.id, true);
+}
+$("home").onclick = () => { select(null); fitAll(); };
+$("up").onclick = up;
+addEventListener("keydown", (e) => {
+  if (e.target.tagName === "INPUT") { if (e.key === "Escape") { e.target.blur(); hideResults(); } return; }
+  if (e.key === "Escape") up();
+  else if (e.key === "0") { select(null); fitAll(); }
+  else if (e.key === "/") { e.preventDefault(); $("q").focus(); }
+});
+
+// ---------- 层级路径 ----------
+function renderCrumbs() {
+  const el = $("crumbs"); el.innerHTML = "";
+  const n = S.sel && S.nodes.get(S.sel);
+  const path = n ? n.path.filter(p => p !== "__u") : [];
+  const add = (label, fn) => { const a = document.createElement("a"); a.textContent = label; a.tabIndex = 0; a.onclick = fn; a.onkeydown = (e) => { if (e.key === "Enter") fn(); }; el.appendChild(a); };
+  add("全景", () => { select(null); fitAll(); });
+  for (const p of path) {
+    const s = document.createElement("span"); s.className = "sep"; s.textContent = "›"; el.appendChild(s);
+    const q = S.nodes.get(p); add(q.title, () => select(p, true));
+  }
+  if (n && n.kind !== "core") { const b = document.createElement("span"); b.className = "layer"; b.textContent = "L" + n.layer; el.appendChild(b); }
+}
+
+// ---------- 详情栏 ----------
+function h(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+function section(title) { const s = h("section"); s.appendChild(h("h3", null, title)); return s; }
+function nodeItem(id, sub, color) {
+  const n = S.nodes.get(id);
+  const li = h("li"); const dot = h("span", "dot"); dot.style.background = color || (n ? hueOf(n) : S.colors.faint);
+  const tx = h("span", "txt", n ? n.title : id);
+  if (sub) tx.appendChild(h("span", "sub", sub));
+  li.append(dot, tx);
+  if (n) { li.tabIndex = 0; li.onclick = () => select(id, true); li.onkeydown = (e) => { if (e.key === "Enter") select(id, true); }; }
+  else li.classList.add("static");
+  return li;
+}
+function edgeList(title, list, dir) {
+  if (!list.length) return null;
+  const s = section(`${title}（${list.length}）`);
+  const ul = h("ul", "list");
+  const sorted = list.slice().sort((a, b) => Object.keys(KINDS).indexOf(a.kind) - Object.keys(KINDS).indexOf(b.kind));
+  for (const e of sorted.slice(0, 30)) {
+    const other = dir === "out" ? e.to : e.from;
+    const o = S.nodes.get(other);
+    const where = o ? (o.sys !== S.nodes.get(S.sel)?.sys ? (S.nodes.get(o.sys)?.title + " · ") : "") : "（未加载的星系）";
+    ul.appendChild(nodeItem(other, `${KINDS[e.kind] || e.kind} · ${where}${e.sections ? e.sections.join("、") + " · " : ""}${e.source || ""}`, S.colors.k[e.kind]));
+  }
+  s.appendChild(ul);
+  if (list.length > 30) s.appendChild(h("div", "more", `还有 ${list.length - 30} 条`));
+  return s;
+}
+function subtreeEdges(n, which) {
+  // 选中一个开着的节点时，把子树里所有出入边都算上（只算跨出子树的）
+  const out = [];
+  const inside = (id) => isAnc(n.id, id);
+  for (const e of S.edges) {
+    if (which === "out" && inside(e.from) && !inside(e.to)) out.push(e);
+    if (which === "in" && !e.dangling && inside(e.to) && !inside(e.from)) out.push(e);
+  }
+  return out;
+}
+function renderPanel() {
+  const p = $("panel"); p.innerHTML = ""; p.classList.remove("min");
+  const n = S.sel && S.nodes.get(S.sel);
+  if (!n) return overview(p);
+  if (n.kind === "core") return corePanel(p);
+  const kick = h("div", "kicker");
+  kick.appendChild(h("span", "layer", "L" + n.layer));
+  kick.appendChild(h("span", null, ({ system: "星系", dir: "文件夹", file: "文件", section: "节", param: "参数", tool: "脚本" })[n.kind] || n.kind));
+  if (n.kind !== "system") kick.appendChild(h("span", null, "· " + (S.nodes.get(n.sys)?.title || "")));
+  if (n.generated) kick.appendChild(h("span", "badge", "生成文件 勿手改"));
+  if (n.frozen) kick.appendChild(h("span", "badge", "冻结"));
+  if (n.local) kick.appendChild(h("span", "badge", "本机加入"));
+  p.appendChild(kick);
+  p.appendChild(h("h2", null, n.title));
+  if (n.role) p.appendChild(h("p", "role", n.role));
+  if (n.source || n.kind === "system") p.appendChild(h("div", "src", n.kind === "system" ? `${n.id}${n.version ? " · " + n.version : ""} · 出处 ${n.source || n.manifest?.system?.source || ""}` : `出处　${n.source}`));
+  if (n.kind === "system" && n.manifest?.system?.location) p.appendChild(h("div", "src", "位置　" + n.manifest.system.location));
+  if (n.head && n.kind === "dir") p.appendChild(h("div", "src", "头脑文件　" + n.head));
+  p.appendChild(editBox(n));
+  if (n.sections && n.sections.length) {
+    const s = section(`${n.kind === "file" ? "文件" : "头脑文件"}里的节（${n.sections.length}）`); const ul = h("ul", "list");
+    for (const x of n.sections) { const li = h("li", "static"); li.style.paddingLeft = (6 + Math.max(0, (x.level || 2) - 2) * 14) + "px"; li.append(h("span", "dot"), h("span", "txt", "§ " + x.title + (x.frozen ? "（冻结）" : ""))); ul.appendChild(li); }
+    s.appendChild(ul); p.appendChild(s);
+  }
+  if (n.defines && n.defines.length) {
+    const s = section("在这里定义的概念"); const ch = h("div", "chips");
+    for (const d of n.defines) ch.appendChild(h("span", "chip def", d));
+    s.appendChild(ch); p.appendChild(s);
+  }
+  if (n.kind === "system") {
+    const its = S.ifaces.filter(i => i.sys === n.id);
+    if (its.length) {
+      const s = section("人机接口"); const ul = h("ul", "list");
+      for (const i of its) ul.appendChild(nodeItem(i.via, `${DIRS[i.dir] || i.dir} · ${i.label}`, S.colors.i[i.dir]));
+      s.appendChild(ul); p.appendChild(s);
+    }
+    const ck = n.manifest?.checks;
+    if (ck) {
+      const s = section("生成时的检查");
+      const line = h("div", "issue");
+      line.textContent = `断链 ${ck.broken?.length || 0} · 节对不上 ${ck.unresolved?.length || 0} · 疑似复写 ${ck.duplicates?.length || 0}${ck.structure ? " · 结构 " + ck.structure.length : ""}`;
+      s.appendChild(line);
+      for (const x of [...(ck.broken || []), ...(ck.structure || []), ...(ck.unresolved || []), ...(ck.duplicates || [])].slice(0, 8)) {
+        const d = h("div", "issue"); const b = h("b", null, x.why); d.append(b, document.createTextNode("　" + [].concat(x.at).join("、") + (x.ref ? " → " + x.ref : x.text ? " ：" + x.text : "")));
+        s.appendChild(d);
+      }
+      p.appendChild(s);
+    }
+    if (n.local) { const b = h("button", null, "从本机星图移除"); b.onclick = () => removeLocal(n.id); p.appendChild(b); }
+  }
+  const whole = n.children.length > 0;
+  const outs = whole ? subtreeEdges(n, "out") : n.out;
+  const ins = whole ? subtreeEdges(n, "in") : n.in;
+  const o = edgeList(whole ? "它（含下层）指向" : "它指向", outs, "out"); if (o) p.appendChild(o);
+  const i = edgeList(whole ? "指向它（含下层）" : "指向它", ins, "in"); if (i) p.appendChild(i);
+  if (!outs.length && !ins.length && n.kind !== "system") p.appendChild(h("div", "issue", "没有跨出本节点的连线。"));
+  if (n.children.length) {
+    const s = section(`下一层（${n.children.length}）`); const ul = h("ul", "list");
+    for (const c of n.children.slice(0, 40)) { const q = S.nodes.get(c); ul.appendChild(nodeItem(c, q.role ? q.role : null)); }
+    s.appendChild(ul); if (n.children.length > 40) s.appendChild(h("div", "more", `还有 ${n.children.length - 40} 个`));
+    p.appendChild(s);
+  }
+}
+// ---------- 用 AI 改 ----------
+function editText(n) {
+  const m = S.nodes.get(n.sys)?.manifest;
+  const loc = m?.system?.location || n.sys;
+  const path = n.kind === "system" ? "" : n.id.slice(n.sys.length + 1);
+  const src = n.kind === "file" ? (n.source || path)
+    : n.kind === "system" ? `${n.head || n.source || "根目录"}（根目录的头脑文件）`
+    : `${path} 文件夹${n.head ? `（头脑文件 ${n.head}）` : "（没有头脑文件）"}`;
+  const ins = (n.children.length ? subtreeEdges(n, "in") : n.in) || [];
+  const seen = new Set(), refs = [];
+  for (const e of ins) {
+    const from = S.nodes.get(e.from);
+    const where = `${from?.sys || e.from} 的 ${e.source || from?.source || e.from}${e.sections ? " " + e.sections.join("、") : ""}（${KINDS[e.kind] || e.kind}）`;
+    if (!seen.has(where)) { seen.add(where); refs.push(where); }
+  }
+  const refTxt = refs.length
+    ? `星图记录的引用方：${refs.slice(0, EDIT_REFS_MAX).join("；")}${refs.length > EDIT_REFS_MAX ? `；另有 ${refs.length - EDIT_REFS_MAX} 处` : ""}（以源文件为准）。`
+    : "星图里没有记录指向它的连线，以源文件为准，改前在源文件里再查一遍。";
+  return EDIT_TEMPLATE.replace("{sys}", n.sys).replace("{src}", src).replace("{loc}", loc).replace("{refs}", refTxt);
+}
+function editBox(n) {
+  const s = section("用 AI 改"); s.classList.add("edit");
+  const row = h("div", "row");
+  const b = h("button", "go", "用 AI 改"); b.type = "button"; b.title = "复制一句改动指令，粘到 Claude Code 或聊天窗口";
+  row.append(b, h("span", "hint", "复制下面这句，粘给 AI"));
+  const ta = h("textarea"); ta.readOnly = true; ta.rows = 4; ta.value = editText(n);
+  ta.setAttribute("aria-label", "改动指令原文");
+  b.onclick = () => {
+    const fallback = () => { ta.focus(); ta.select(); let ok = false; try { ok = document.execCommand("copy"); } catch {} toast(ok ? "已复制改动指令" : "浏览器不让自动复制，已选中指令，按 Ctrl+C（手机长按）复制"); };
+    try { navigator.clipboard.writeText(ta.value).then(() => toast("已复制改动指令"), fallback); } catch { fallback(); }
+  };
+  s.append(row, ta);
+  return s;
+}
+function overview(p) {
+  p.appendChild(h("div", "kicker", "L0 全景"));
+  p.appendChild(h("h2", null, "你的技能宇宙"));
+  p.appendChild(h("p", "role", "中心是你和 Claude，每个星系是一个技能。连到中心的线是人机接口：从哪里下指令、结果回到哪里。星系之间的线是引用、生成、派工和遵循。"));
+  const s = section("怎么看"); const ol = h("ol", "howto");
+  for (const t of ["点一颗星：飞过去，下一层自动展开。", "滚轮或双指缩放：拉近时下一层逐渐浮现，连线自动落到看得见的那一层。", "选中节点：它的出入连线亮起并流动，右栏列出谁引用它、它引用谁。", "要改一个文件或文件夹：选中它，点「用 AI 改」，把复制的指令粘给 AI。", "Esc 回上一层，0 回全景，/ 搜索概念或节名，直达所在文件。", "文件是最小的星；L0–L3 按文件种类分，方块是参数、代码、页面（L3）。"]) ol.appendChild(h("li", null, t));
+  s.appendChild(ol); p.appendChild(s);
+  const g = section(`星系（${S.systems.length}）`); const ul = h("ul", "list");
+  for (const x of S.systems.slice().sort((a, b) => b.w - a.w)) ul.appendChild(nodeItem(x.id, `${x.w} 颗星${x.version ? " · " + x.version : ""}${x.local ? " · 本机加入" : ""}`));
+  g.appendChild(ul); p.appendChild(g);
+  const a = section("插入新技能"); const ol2 = h("ol", "howto");
+  const li1 = h("li"); li1.append("用 ", h("code", null, "tools/zoomgen.py"), " 扫技能目录，生成 ", h("code", null, "zoom.json"), "。");
+  const li2 = h("li"); li2.append("推不出来的边（派工、调度、读写、遵循）写进 ", h("code", null, "zoom.hints.json"), "。");
+  const li3 = h("li"); li3.append("放进 ", h("code", null, "manifests/"), " 重新发布；或者直接把 zoom.json 拖进本页，只在本机显示。");
+  ol2.append(li1, li2, li3); a.appendChild(ol2); p.appendChild(a);
+  if (S.W <= 760) { p.classList.add("min"); p.onclick = () => p.classList.remove("min"); }
+}
+function corePanel(p) {
+  p.appendChild(h("div", "kicker", "L0 人机接口"));
+  p.appendChild(h("h2", null, "你 ↔ Claude"));
+  p.appendChild(h("p", "role", "每个技能在 L0 先说清人与 AI 怎么协作：人从哪里下指令、什么只归人决定、结果回到哪里、AI 读写哪些外部来源。"));
+  for (const d of Object.keys(DIRS)) {
+    const its = S.ifaces.filter(i => i.dir === d); if (!its.length) continue;
+    const s = section(`${DIRS[d]}（${its.length}）`); const ul = h("ul", "list");
+    for (const i of its) ul.appendChild(nodeItem(i.via, `${S.nodes.get(i.sys)?.title} · ${i.label}`, S.colors.i[d]));
+    s.appendChild(ul); p.appendChild(s);
+  }
+}
+
+// ---------- 图例 ----------
+function buildLegend() {
+  const el = $("legend"); el.innerHTML = "";
+  const used = new Set(S.edges.map(e => e.kind));
+  for (const k of Object.keys(KINDS)) {
+    if (!used.has(k)) continue;
+    const b = h("button"); b.setAttribute("aria-pressed", S.kindsOn[k] !== false ? "true" : "false");
+    const sw = h("span", "sw"); b.style.color = S.colors.k[k];
+    const lab = h("span", null, KINDS[k]); lab.style.color = S.colors.ink;
+    b.append(sw, lab);
+    b.onclick = () => { S.kindsOn[k] = S.kindsOn[k] === false; b.setAttribute("aria-pressed", S.kindsOn[k] ? "true" : "false"); store.set("starmap.kinds", S.kindsOn); };
+    el.appendChild(b);
+  }
+  const b = h("button"); b.style.color = S.colors.i.in; b.append(h("span", "sw"), Object.assign(h("span", null, "人机接口"), { style: `color:${S.colors.ink}` }));
+  b.disabled = true; b.style.cursor = "default"; el.appendChild(b);
+}
+
+// ---------- 搜索 ----------
+let hits = [], hi = 0;
+function hideResults() { $("results").hidden = true; }
+$("q").addEventListener("input", () => {
+  const q = $("q").value.trim().toLowerCase(); const ul = $("results"); ul.innerHTML = ""; hits = []; hi = 0;
+  if (!q) return hideResults();
+  for (const n of S.nodes.values()) {
+    if (n.id === "__u") continue;
+    let score = 0, why = "";
+    const t = (n.title || "").toLowerCase();
+    if (t === q) score = 100; else if (t.startsWith(q)) score = 80; else if (t.includes(q)) score = 60;
+    for (const d of n.defines || []) if (d.toLowerCase().includes(q) && score < 90) { score = 90; why = "概念「" + d + "」的唯一出处"; }
+    if (score < 70) for (const x of n.sections || []) if (x.title.toLowerCase().includes(q)) { score = 70; why = "节「" + x.title + "」在这个文件里"; break; }
+    if (!score && (n.role || "").toLowerCase().includes(q)) score = 30;
+    if (!score && n.id.toLowerCase().includes(q)) score = 20;
+    if (score) hits.push({ n, score: score - n.layer * 0.5, why });
+  }
+  hits.sort((a, b) => b.score - a.score); hits = hits.slice(0, 14);
+  hits.forEach((x, i) => {
+    const li = h("li"); li.setAttribute("role", "option"); li.setAttribute("aria-selected", i === 0 ? "true" : "false");
+    li.append(h("span", "t", x.n.title), h("span", "m", (x.why ? x.why + " · " : "") + (x.n.source || x.n.id)));
+    li.onmousedown = (e) => { e.preventDefault(); pick(i); };
+    ul.appendChild(li);
+  });
+  ul.hidden = !hits.length;
+});
+$("q").addEventListener("keydown", (e) => {
+  const lis = [...$("results").children];
+  if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); hi = (hi + (e.key === "ArrowDown" ? 1 : -1) + lis.length) % (lis.length || 1); lis.forEach((l, i) => l.setAttribute("aria-selected", i === hi ? "true" : "false")); }
+  if (e.key === "Enter" && hits[hi]) pick(hi);
+});
+$("q").addEventListener("blur", () => setTimeout(hideResults, 120));
+function pick(i) { const n = hits[i].n; hideResults(); $("q").blur(); select(n.id, true); }
+
+// ---------- 本机加入清单 ----------
+function toast(msg) { const t = h("div", "toast", msg); document.body.appendChild(t); setTimeout(() => t.remove(), 3200); }
+async function addFiles(files) {
+  let added = [];
+  for (const f of files) {
+    try {
+      const m = JSON.parse(await f.text());
+      if (!valid(m)) { toast(`${f.name} 不是 zoom.json：缺少 zoom、system.id、nodes 或 edges`); continue; }
+      S.manifests.set(m.system.id, { m, local: true }); added.push(m);
+    } catch { toast(`${f.name} 读不出来：不是合法的 JSON`); }
+  }
+  if (!added.length) return;
+  const local = [...S.manifests.values()].filter(x => x.local).map(x => x.m);
+  store.set("starmap.local", local);
+  rebuild();
+  toast(`已加入 ${added.map(m => m.system.title || m.system.id).join("、")}（只在本机）`);
+  select(added[0].system.id, true);
+}
+function removeLocal(id) {
+  S.manifests.delete(id);
+  store.set("starmap.local", [...S.manifests.values()].filter(x => x.local).map(x => x.m));
+  rebuild(); select(null); fitAll();
+}
+$("add").onclick = () => $("file").click();
+$("file").onchange = (e) => { addFiles([...e.target.files]); e.target.value = ""; };
+let dragDepth = 0;
+addEventListener("dragenter", (e) => { if ([...(e.dataTransfer?.types || [])].includes("Files")) { dragDepth++; $("drop").hidden = false; e.preventDefault(); } });
+addEventListener("dragover", (e) => { if (!$("drop").hidden) e.preventDefault(); });
+addEventListener("dragleave", () => { dragDepth = Math.max(0, dragDepth - 1); if (!dragDepth) $("drop").hidden = true; });
+addEventListener("drop", (e) => { e.preventDefault(); dragDepth = 0; $("drop").hidden = true; if (e.dataTransfer?.files?.length) addFiles([...e.dataTransfer.files]); });
+
+// 有检查问题的节点打红点
+function markIssues() {
+  for (const [, { m }] of S.manifests) {
+    const ck = m.checks || {};
+    for (const x of [...(ck.broken || []), ...(ck.unresolved || []), ...(ck.structure || [])]) {
+      const at = [].concat(x.at)[0] || ""; const f = at.split(":")[0];
+      const hd = f.match(/^(.*\/)?(SKILL|README)\.md$/);
+      const n = (x.node && S.nodes.get(x.node)) || S.nodes.get(`${m.system.id}:${f}`) || (hd ? S.nodes.get(hd[1] ? `${m.system.id}:${hd[1]}` : m.system.id) : null);
+      if (n) n.issues = (n.issues || 0) + 1;
+    }
+  }
+}
+const _rebuild = rebuild;
+rebuild = function () { _rebuild(); markIssues(); };
+
+document.fonts && document.fonts.ready.then(readColors);
+boot().then(() => requestAnimationFrame(draw));
+renderCrumbs();
+})();
+</script>

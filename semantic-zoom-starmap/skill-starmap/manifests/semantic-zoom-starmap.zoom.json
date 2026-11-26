@@ -1,0 +1,251 @@
+{
+ "zoom": "2.0",
+ "generated": {
+  "by": "skill-starmap/tools/zoomgen.py",
+  "at": "2026-11-25",
+  "from": [
+   "AGENTS.md",
+   "CHANGELOG.md",
+   "CLAUDE.md",
+   "LICENSE",
+   "NOTICE",
+   "README.md",
+   "sza.py",
+   "zoom.hints.json"
+  ],
+  "note": "生成文件，勿手改。改源文件或 zoom.hints.json 后重新运行 zoomgen。"
+ },
+ "system": {
+  "id": "semantic-zoom-starmap",
+  "title": "Semantic Zoom Architecture + Skill Starmap",
+  "role": "仓库根目录：一条命令入口 sza.py、给 AI 的指向和许可",
+  "source": "README.md",
+  "location": "semantic-zoom-starmap/（仓库根目录：命令入口与许可）"
+ },
+ "interface": [
+  {
+   "dir": "in",
+   "label": "人在终端运行 python3 sza.py <命令>，或在 Claude Code 里用 /sza-change 等斜杠命令",
+   "via": "semantic-zoom-starmap:sza.py",
+   "source": "README.md § 快速开始"
+  },
+  {
+   "dir": "out",
+   "label": "给 AI 的改动指令、检查报告、度量汇总、dist/ 里的 zip",
+   "via": "semantic-zoom-starmap:sza.py",
+   "source": "sza.py 文件头"
+  },
+  {
+   "dir": "write",
+   "label": ".sza/history 的 log.jsonl，以及 git 管不到时的快照",
+   "via": "semantic-zoom-starmap:sza.py",
+   "source": "sza.py 文件头"
+  },
+  {
+   "dir": "decide",
+   "label": "改什么、退不退回、推送 git 和上传 claude.ai",
+   "via": "semantic-zoom-starmap",
+   "source": "README.md § L0 · 总览"
+  },
+  {
+   "dir": "never",
+   "label": "推送 git、上传 claude.ai",
+   "source": "README.md § L0 · 总览"
+  }
+ ],
+ "nodes": [
+  {
+   "id": "semantic-zoom-starmap",
+   "parent": null,
+   "layer": 0,
+   "kind": "system",
+   "title": "Semantic Zoom Architecture + Skill Starmap",
+   "role": "仓库根目录：一条命令入口 sza.py、给 AI 的指向和许可",
+   "source": "README.md",
+   "head": "README.md",
+   "sections": [
+    {
+     "level": 2,
+     "title": "L0 · 总览"
+    },
+    {
+     "level": 2,
+     "title": "概念 → 唯一出处"
+    },
+    {
+     "level": 2,
+     "title": "快速开始"
+    },
+    {
+     "level": 2,
+     "title": "看星图"
+    }
+   ]
+  },
+  {
+   "id": "semantic-zoom-starmap:AGENTS.md",
+   "parent": "semantic-zoom-starmap",
+   "layer": 1,
+   "kind": "file",
+   "title": "AGENTS.md",
+   "role": "给任何 AI 的一句指向，先读架构技能，命令用 sza.py",
+   "source": "AGENTS.md",
+   "defines": [
+    "给 AI 的入口"
+   ]
+  },
+  {
+   "id": "semantic-zoom-starmap:CHANGELOG.md",
+   "parent": "semantic-zoom-starmap",
+   "layer": 1,
+   "kind": "file",
+   "title": "CHANGELOG.md",
+   "role": "整仓发布记录",
+   "source": "CHANGELOG.md"
+  },
+  {
+   "id": "semantic-zoom-starmap:CLAUDE.md",
+   "parent": "semantic-zoom-starmap",
+   "layer": 1,
+   "kind": "file",
+   "title": "CLAUDE.md",
+   "role": "Claude Code 读的入口，只导入 AGENTS.md",
+   "source": "CLAUDE.md"
+  },
+  {
+   "id": "semantic-zoom-starmap:LICENSE",
+   "parent": "semantic-zoom-starmap",
+   "layer": 3,
+   "kind": "file",
+   "title": "LICENSE",
+   "role": "NOTICE: Copyright (c) 2026 Xuhao Chao. All rights reserved. Proprietary; see LICENSE. Commercial use, redistribution or derivative works require prior written permission.",
+   "source": "LICENSE"
+  },
+  {
+   "id": "semantic-zoom-starmap:NOTICE",
+   "parent": "semantic-zoom-starmap",
+   "layer": 3,
+   "kind": "file",
+   "title": "NOTICE",
+   "role": "版权声明",
+   "source": "NOTICE"
+  },
+  {
+   "id": "semantic-zoom-starmap:sza.py",
+   "parent": "semantic-zoom-starmap",
+   "layer": 3,
+   "kind": "file",
+   "title": "sza.py",
+   "role": "命令入口，安装、更新、检查、打包、快照、退回、改动、度量；跨平台，只用标准库",
+   "source": "sza.py",
+   "defines": [
+    "命令和参数（文件头）"
+   ]
+  },
+  {
+   "id": "semantic-zoom-starmap:zoom.hints.json",
+   "parent": "semantic-zoom-starmap",
+   "layer": 3,
+   "kind": "file",
+   "title": "zoom.hints.json",
+   "role": "仓库根目录这颗星的手写边和人机接口",
+   "source": "zoom.hints.json",
+   "sections": [
+    {
+     "level": 2,
+     "title": "system"
+    },
+    {
+     "level": 2,
+     "title": "interface"
+    },
+    {
+     "level": 2,
+     "title": "layers"
+    },
+    {
+     "level": 2,
+     "title": "edges"
+    }
+   ]
+  }
+ ],
+ "edges": [
+  {
+   "from": "semantic-zoom-starmap:AGENTS.md",
+   "to": "semantic-zoom-starmap:sza.py",
+   "kind": "mention",
+   "source": "AGENTS.md:2"
+  },
+  {
+   "from": "semantic-zoom-starmap:AGENTS.md",
+   "to": "semantic-zoom-architecture",
+   "kind": "mention",
+   "source": "AGENTS.md:2"
+  },
+  {
+   "from": "semantic-zoom-starmap",
+   "to": "semantic-zoom-architecture",
+   "kind": "mention",
+   "source": "README.md:9"
+  },
+  {
+   "from": "semantic-zoom-starmap",
+   "to": "skill-starmap",
+   "kind": "mention",
+   "source": "README.md:10"
+  },
+  {
+   "from": "semantic-zoom-starmap:sza.py",
+   "to": "skill-starmap:tools/zoomgen.py",
+   "kind": "runs",
+   "source": "sza.py run_check"
+  },
+  {
+   "from": "semantic-zoom-starmap:sza.py",
+   "to": "skill-starmap:registry.json",
+   "kind": "reads",
+   "source": "sza.py run_check、locate"
+  },
+  {
+   "from": "semantic-zoom-starmap:sza.py",
+   "to": "skill-starmap:page/starmap.html",
+   "kind": "reads",
+   "source": "sza.py page_const（改动指令模板的唯一出处）"
+  },
+  {
+   "from": "semantic-zoom-starmap:sza.py",
+   "to": "semantic-zoom-architecture:daily-change.md",
+   "kind": "follows",
+   "source": "sza.py 文件头"
+  },
+  {
+   "from": "semantic-zoom-starmap:sza.py",
+   "to": "semantic-zoom-architecture:params.json",
+   "kind": "reads",
+   "source": "sza.py params（阈值的唯一出处）"
+  },
+  {
+   "from": "semantic-zoom-starmap:sza.py",
+   "to": "semantic-zoom-architecture:metrics.md",
+   "kind": "follows",
+   "source": "sza.py 文件头"
+  },
+  {
+   "from": "semantic-zoom-starmap:AGENTS.md",
+   "to": "semantic-zoom-architecture",
+   "kind": "follows",
+   "source": "AGENTS.md"
+  }
+ ],
+ "checks": {
+  "broken": [],
+  "unresolved": [],
+  "duplicates": [],
+  "structure": [],
+  "info": [],
+  "accepted": [],
+  "depth": [],
+  "cycles": []
+ }
+}

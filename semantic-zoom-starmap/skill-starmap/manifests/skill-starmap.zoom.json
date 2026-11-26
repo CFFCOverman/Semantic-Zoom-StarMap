@@ -1,0 +1,457 @@
+{
+ "zoom": "2.0",
+ "generated": {
+  "by": "skill-starmap/tools/zoomgen.py",
+  "at": "2026-11-25",
+  "from": [
+   "CHANGELOG.md",
+   "README.md",
+   "SKILL.md",
+   "hints/README.md",
+   "hints/semantic-zoom-architecture.zoom.hints.json",
+   "page/README.md",
+   "page/starmap.html",
+   "registry.json",
+   "rules.md",
+   "tools/README.md",
+   "tools/zoomgen.py",
+   "zoom.hints.json",
+   "zoom.schema.json"
+  ],
+  "note": "生成文件，勿手改。改源文件或 zoom.hints.json 后重新运行 zoomgen。"
+ },
+ "system": {
+  "id": "skill-starmap",
+  "title": "Skill Starmap v2.4",
+  "version": "2.4",
+  "role": "把任何技能画成可缩放的星图：拉远看全景，点开看下一层，连线看谁引用谁",
+  "source": "SKILL.md",
+  "location": "semantic-zoom-starmap/skill-starmap/"
+ },
+ "interface": [
+  {
+   "dir": "in",
+   "label": "在频道说「把 X 技能上星图」",
+   "via": "skill-starmap",
+   "source": "SKILL.md § L0 全景"
+  },
+  {
+   "dir": "out",
+   "label": "星图页面",
+   "via": "skill-starmap:page/starmap.html",
+   "source": "SKILL.md § 接口"
+  },
+  {
+   "dir": "in",
+   "label": "在页面选中文件，点「用 AI 改」复制改动指令",
+   "via": "skill-starmap:page/starmap.html",
+   "source": "SKILL.md § L0 全景"
+  },
+  {
+   "dir": "decide",
+   "label": "哪些技能上图、hints 里的手写边和层级覆盖",
+   "via": "skill-starmap:zoom.hints.json",
+   "source": "SKILL.md § L0 全景"
+  },
+  {
+   "dir": "read",
+   "label": "被扫描技能的源文件（只读）",
+   "via": "skill-starmap:tools/zoomgen.py",
+   "source": "SKILL.md § 接口"
+  },
+  {
+   "dir": "never",
+   "label": "改被扫描技能的任何文件",
+   "source": "SKILL.md § 接口"
+  }
+ ],
+ "nodes": [
+  {
+   "id": "skill-starmap",
+   "parent": null,
+   "layer": 0,
+   "kind": "system",
+   "title": "Skill Starmap v2.4",
+   "role": "把任何技能画成可缩放的星图：拉远看全景，点开看下一层，连线看谁引用谁",
+   "version": "2.4",
+   "source": "SKILL.md",
+   "head": "SKILL.md",
+   "sections": [
+    {
+     "level": 2,
+     "title": "接口"
+    },
+    {
+     "level": 2,
+     "title": "L0 全景：人与 AI 怎么协作"
+    },
+    {
+     "level": 2,
+     "title": "节点"
+    },
+    {
+     "level": 2,
+     "title": "引用"
+    },
+    {
+     "level": 2,
+     "title": "步骤"
+    },
+    {
+     "level": 3,
+     "title": "插一个新技能进来"
+    },
+    {
+     "level": 3,
+     "title": "改一个文件之前：反查"
+    }
+   ],
+   "defines": [
+    "插入新技能、反查的步骤（§ 步骤）"
+   ]
+  },
+  {
+   "id": "skill-starmap:hints/",
+   "parent": "skill-starmap",
+   "layer": 1,
+   "kind": "dir",
+   "title": "hints/ 暂存的手写边",
+   "role": "别的技能源目录只读、放不进 zoom.hints.json 时，把它的 hints 放在这里，文件名是「技能 id.zoom.hints.json」。",
+   "source": "hints/README.md",
+   "head": "hints/README.md"
+  },
+  {
+   "id": "skill-starmap:page/",
+   "parent": "skill-starmap",
+   "layer": 1,
+   "kind": "dir",
+   "title": "page/ 星图页面",
+   "role": "把 manifests/ 里的清单画成可缩放的星图；页面只读清单，不含数据。",
+   "source": "page/README.md",
+   "head": "page/README.md"
+  },
+  {
+   "id": "skill-starmap:tools/",
+   "parent": "skill-starmap",
+   "layer": 1,
+   "kind": "dir",
+   "title": "tools/ 生成脚本",
+   "role": "扫描一个技能或项目目录，产出它的星图清单 zoom.json，并做断链、复写和结构检查。",
+   "source": "tools/README.md",
+   "head": "tools/README.md"
+  },
+  {
+   "id": "skill-starmap:CHANGELOG.md",
+   "parent": "skill-starmap",
+   "layer": 1,
+   "kind": "file",
+   "title": "CHANGELOG.md",
+   "role": "版本记录",
+   "source": "CHANGELOG.md"
+  },
+  {
+   "id": "skill-starmap:README.md",
+   "parent": "skill-starmap",
+   "layer": 1,
+   "kind": "file",
+   "title": "README.md",
+   "role": "给人看的入口，只有一句指向本文件",
+   "source": "README.md"
+  },
+  {
+   "id": "skill-starmap:hints/semantic-zoom-architecture.zoom.hints.json",
+   "parent": "skill-starmap:hints/",
+   "layer": 3,
+   "kind": "file",
+   "title": "semantic-zoom-architecture.zoom.hints.json",
+   "role": "架构技能的人机接口和跨星系引用",
+   "source": "hints/semantic-zoom-architecture.zoom.hints.json",
+   "sections": [
+    {
+     "level": 2,
+     "title": "system"
+    },
+    {
+     "level": 2,
+     "title": "interface"
+    },
+    {
+     "level": 2,
+     "title": "edges"
+    }
+   ]
+  },
+  {
+   "id": "skill-starmap:page/starmap.html",
+   "parent": "skill-starmap:page/",
+   "layer": 3,
+   "kind": "file",
+   "title": "starmap.html",
+   "role": "渲染器，缩放、展开、高亮连线、搜索概念与节名；文件节点在右栏列出它的节；选中文件或文件夹可复制一句「用 AI 改」指令",
+   "source": "page/starmap.html",
+   "defines": [
+    "页面交互（缩放、展开、高亮、搜索、用 AI 改）"
+   ]
+  },
+  {
+   "id": "skill-starmap:registry.json",
+   "parent": "skill-starmap",
+   "layer": 3,
+   "kind": "file",
+   "title": "registry.json",
+   "role": "登记表，哪些系统上星图、源目录在哪",
+   "source": "registry.json",
+   "sections": [
+    {
+     "level": 2,
+     "title": "out"
+    },
+    {
+     "level": 2,
+     "title": "systems"
+    }
+   ]
+  },
+  {
+   "id": "skill-starmap:rules.md",
+   "parent": "skill-starmap",
+   "layer": 1,
+   "kind": "file",
+   "title": "rules.md",
+   "role": "zoomgen 怎么从文档读出星图（节点、层级、角色、定义、边、人机接口、检查）",
+   "source": "rules.md",
+   "sections": [
+    {
+     "level": 2,
+     "title": "1. 节点"
+    },
+    {
+     "level": 2,
+     "title": "2. 层级（按文件种类）"
+    },
+    {
+     "level": 2,
+     "title": "3. 一句话角色"
+    },
+    {
+     "level": 2,
+     "title": "4. 定义（defines）"
+    },
+    {
+     "level": 2,
+     "title": "5. 边"
+    },
+    {
+     "level": 2,
+     "title": "6. 人机接口"
+    },
+    {
+     "level": 2,
+     "title": "7. 检查"
+    }
+   ],
+   "defines": [
+    "推导规则与检查规则",
+    "层级映射（文件种类 → L0–L3）（§ 2）"
+   ]
+  },
+  {
+   "id": "skill-starmap:tools/zoomgen.py",
+   "parent": "skill-starmap:tools/",
+   "layer": 3,
+   "kind": "file",
+   "title": "zoomgen.py",
+   "role": "扫描源目录 → zoom.json；按登记表重新生成全部清单和 index.json；命令行用法写在它的文件头",
+   "source": "tools/zoomgen.py",
+   "defines": [
+    "命令行用法"
+   ]
+  },
+  {
+   "id": "skill-starmap:zoom.hints.json",
+   "parent": "skill-starmap",
+   "layer": 3,
+   "kind": "file",
+   "title": "zoom.hints.json",
+   "role": "本工具自己的手写边、人机接口与层级覆盖",
+   "source": "zoom.hints.json",
+   "sections": [
+    {
+     "level": 2,
+     "title": "system"
+    },
+    {
+     "level": 2,
+     "title": "interface"
+    },
+    {
+     "level": 2,
+     "title": "layers"
+    },
+    {
+     "level": 2,
+     "title": "edges"
+    }
+   ],
+   "defines": [
+    "本工具的手写边、接口与层级覆盖"
+   ]
+  },
+  {
+   "id": "skill-starmap:zoom.schema.json",
+   "parent": "skill-starmap",
+   "layer": 3,
+   "kind": "file",
+   "title": "zoom.schema.json",
+   "role": "协议，清单字段、节点类型、边类型、人机接口方向的唯一出处",
+   "source": "zoom.schema.json",
+   "sections": [
+    {
+     "level": 2,
+     "title": "$schema"
+    },
+    {
+     "level": 2,
+     "title": "$id"
+    },
+    {
+     "level": 2,
+     "title": "title"
+    },
+    {
+     "level": 2,
+     "title": "description"
+    },
+    {
+     "level": 2,
+     "title": "type"
+    },
+    {
+     "level": 2,
+     "title": "required"
+    },
+    {
+     "level": 2,
+     "title": "properties"
+    },
+    {
+     "level": 2,
+     "title": "$defs"
+    }
+   ],
+   "defines": [
+    "清单字段、节点类型、边类型、接口方向"
+   ]
+  }
+ ],
+ "edges": [
+  {
+   "from": "skill-starmap:CHANGELOG.md",
+   "to": "semantic-zoom-architecture",
+   "kind": "mention",
+   "source": "CHANGELOG.md:6",
+   "n": 2
+  },
+  {
+   "from": "skill-starmap",
+   "to": "semantic-zoom-architecture",
+   "kind": "mention",
+   "source": "SKILL.md:10",
+   "n": 2
+  },
+  {
+   "from": "skill-starmap",
+   "to": "skill-starmap:zoom.schema.json",
+   "kind": "ref",
+   "source": "SKILL.md:15",
+   "n": 2
+  },
+  {
+   "from": "skill-starmap",
+   "to": "skill-starmap:rules.md",
+   "kind": "ref",
+   "source": "SKILL.md:16",
+   "sections": [
+    "§ 7"
+   ],
+   "n": 2
+  },
+  {
+   "from": "skill-starmap:hints/",
+   "to": "skill-starmap:zoom.schema.json",
+   "kind": "ref",
+   "source": "hints/README.md:2"
+  },
+  {
+   "from": "skill-starmap:hints/",
+   "to": "semantic-zoom-architecture",
+   "kind": "mention",
+   "source": "hints/README.md:3"
+  },
+  {
+   "from": "skill-starmap:rules.md",
+   "to": "skill-starmap:zoom.schema.json",
+   "kind": "ref",
+   "source": "rules.md:2",
+   "n": 2
+  },
+  {
+   "from": "skill-starmap:rules.md",
+   "to": "semantic-zoom-architecture",
+   "kind": "mention",
+   "source": "rules.md:6",
+   "n": 4
+  },
+  {
+   "from": "skill-starmap:tools/",
+   "to": "skill-starmap:rules.md",
+   "kind": "ref",
+   "source": "tools/README.md:2"
+  },
+  {
+   "from": "skill-starmap",
+   "to": "semantic-zoom-architecture",
+   "kind": "follows",
+   "source": "SKILL.md 开头规则"
+  },
+  {
+   "from": "skill-starmap:tools/zoomgen.py",
+   "to": "skill-starmap:zoom.schema.json",
+   "kind": "follows",
+   "source": "tools/zoomgen.py 文件头"
+  },
+  {
+   "from": "skill-starmap:tools/zoomgen.py",
+   "to": "skill-starmap:registry.json",
+   "kind": "reads",
+   "source": "SKILL.md § 步骤"
+  },
+  {
+   "from": "skill-starmap:page/starmap.html",
+   "to": "skill-starmap:zoom.schema.json",
+   "kind": "reads",
+   "source": "page/README.md"
+  }
+ ],
+ "checks": {
+  "broken": [],
+  "unresolved": [],
+  "duplicates": [],
+  "structure": [],
+  "info": [],
+  "accepted": [],
+  "depth": [
+   {
+    "node": "skill-starmap:tools/",
+    "hops": 2,
+    "files": 2,
+    "path": [
+     "skill-starmap:tools/",
+     "skill-starmap:rules.md",
+     "skill-starmap:zoom.schema.json"
+    ]
+   }
+  ],
+  "cycles": []
+ }
+}

@@ -1,0 +1,20 @@
+{
+ "system": {"id": "semantic-zoom-starmap", "role": "仓库根目录：一条命令入口 sza.py、给 AI 的指向和许可"},
+ "interface": [
+  {"dir": "in", "label": "人在终端运行 python3 sza.py <命令>，或在 Claude Code 里用 /sza-change 等斜杠命令", "via": "sza.py", "source": "README.md § 快速开始"},
+  {"dir": "out", "label": "给 AI 的改动指令、检查报告、度量汇总、dist/ 里的 zip", "via": "sza.py", "source": "sza.py 文件头"},
+  {"dir": "write", "label": ".sza/history 的 log.jsonl，以及 git 管不到时的快照", "via": "sza.py", "source": "sza.py 文件头"},
+  {"dir": "decide", "label": "改什么、退不退回、推送 git 和上传 claude.ai", "via": "README.md", "source": "README.md § L0 · 总览"},
+  {"dir": "never", "label": "推送 git、上传 claude.ai", "source": "README.md § L0 · 总览"}
+ ],
+ "layers": {},
+ "edges": [
+  {"from": "sza.py", "to": "skill-starmap:tools/zoomgen.py", "kind": "runs", "source": "sza.py run_check"},
+  {"from": "sza.py", "to": "skill-starmap:registry.json", "kind": "reads", "source": "sza.py run_check、locate"},
+  {"from": "sza.py", "to": "skill-starmap:page/starmap.html", "kind": "reads", "source": "sza.py page_const（改动指令模板的唯一出处）"},
+  {"from": "sza.py", "to": "semantic-zoom-architecture:daily-change.md", "kind": "follows", "source": "sza.py 文件头"},
+  {"from": "sza.py", "to": "semantic-zoom-architecture:params.json", "kind": "reads", "source": "sza.py params（阈值的唯一出处）"},
+  {"from": "sza.py", "to": "semantic-zoom-architecture:metrics.md", "kind": "follows", "source": "sza.py 文件头"},
+  {"from": "AGENTS.md", "to": "semantic-zoom-architecture", "kind": "follows", "source": "AGENTS.md"}
+ ]
+}

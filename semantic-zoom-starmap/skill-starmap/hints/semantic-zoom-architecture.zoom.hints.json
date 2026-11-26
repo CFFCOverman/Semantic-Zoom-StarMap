@@ -1,0 +1,12 @@
+{
+ "system": {"role": "架构法：逐层展开、一处定义、只引用不复写；L0 先画人与 AI 怎么协作"},
+ "interface": [
+  {"dir": "in", "label": "新建、修改或初始化任何项目、skill、文件时加载", "via": "SKILL.md", "source": "SKILL.md § 接口"},
+  {"dir": "decide", "label": "用户先确认 L0；改已有项目前先问", "via": "new-project.md", "source": "new-project.md 第 1 条、restructure.md 第 2 条"},
+  {"dir": "out", "label": "按结构放好的文件、改前快照、同步好的星图", "via": "SKILL.md", "source": "SKILL.md § 接口"}
+ ],
+ "edges": [
+  {"from": "starmap.md", "to": "skill-starmap:zoom.schema.json", "kind": "ref", "source": "starmap.md 第 1 条", "note": "字段、节点类型和边类型只在这里定义"},
+  {"from": "starmap.md", "to": "skill-starmap:tools/zoomgen.py", "kind": "runs", "source": "starmap.md 第 2、4 条"}
+ ]
+}
